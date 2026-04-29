@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PropertyLeasing.API.Data;
+using PropertyLeasingSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,9 @@ builder.Services.AddControllersWithViews();
 // Database Connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<ILeaseLifecycleService, LeaseLifecycleService>();
+builder.Services.AddScoped<IMaintenanceLifecycleService, MaintenanceLifecycleService>();
 
 var app = builder.Build();
 
