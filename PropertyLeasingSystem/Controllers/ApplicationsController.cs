@@ -91,6 +91,12 @@ namespace PropertyLeasingSystem.Controllers
 
             _context.Leases.Add(lease);
 
+            application.Status = ApplicationStatuses.LeaseActive;
+            application.ProcessedAt = DateTime.UtcNow;
+            application.Unit.IsAvailable = false;
+
+            await _context.SaveChangesAsync();
+
             return Ok(new
             {
                 application.ApplicationId,
