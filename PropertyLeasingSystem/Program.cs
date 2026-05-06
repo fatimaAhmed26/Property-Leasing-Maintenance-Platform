@@ -12,6 +12,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<ILeaseLifecycleService, LeaseLifecycleService>();
 builder.Services.AddScoped<IMaintenanceLifecycleService, MaintenanceLifecycleService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 var app = builder.Build();
 
