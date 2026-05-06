@@ -22,3 +22,25 @@
 | 9 | Activate with end before start | `EndDate < StartDate` | 400 Bad Request |
 | 10 | Activate with missing dates | No `StartDate` or `EndDate` | 400 Bad Request |
 | 11 | Activate same unit twice | First lease active | 400 Bad Request on second attempt |
+
+## Maintenance Workflow Test Cases
+
+### Status Transitions
+
+| # | Scenario | Starting Status | Action | Expected Result |
+|---|----------|----------------|--------|-----------------|
+| 12 | Assign request | Submitted | Property Manager assigns staff | Status changes to Assigned |
+| 13 | Start work | Assigned | Maintenance Staff updates status | Status changes to In Progress |
+| 14 | Resolve request | In Progress | Maintenance Staff updates status | Status changes to Resolved |
+| 15 | Close request | Resolved | Property Manager or Tenant closes | Status changes to Closed |
+| 16 | Skip Assigned (go directly to In Progress) | Submitted | Maintenance Staff updates status | 400 Bad Request |
+| 17 | Skip In Progress (go directly to Resolved) | Assigned | Maintenance Staff updates status | 400 Bad Request |
+| 18 | Close unresolved request | In Progress | Any role calls close | 400 Bad Request |
+| 19 | Edit closed request | Closed | Maintenance Staff updates status | 400 Bad Request |
+
+### Staff Assignment
+
+| # | Scenario | Condition | Expected Result |
+|---|----------|-----------|-----------------|
+| 20 | Assign valid staff | Request is Submitted | Status changes to Assigned |
+| 21 | Assign on already assigned request | Status is Assigned | 400 Bad Request |
