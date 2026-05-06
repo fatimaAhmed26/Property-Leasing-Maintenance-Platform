@@ -99,12 +99,15 @@ namespace PropertyLeasingSystem.Controllers
 
             return Ok(new
             {
-                application.ApplicationId,
-                application.Status,
-                application.UnitId,
-                UnitAvailable = application.Unit.IsAvailable,
-                request.StartDate,
-                request.EndDate
+                lease.LeaseId,
+                lease.ApplicationId,
+                lease.UnitId,
+                lease.TenantId,
+                lease.StartDate,
+                lease.EndDate,
+                lease.MonthlyRent,
+                lease.Status,
+                lease.CreatedAt
             });
         }
 
