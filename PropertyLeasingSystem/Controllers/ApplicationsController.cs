@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropertyLeasingSystem.Data;
+using PropertyLeasingSystem.DTOs;
 using PropertyLeasingSystem.Services;
 using System.Security.Claims;
 
@@ -50,6 +51,12 @@ namespace PropertyLeasingSystem.Controllers
                 id,
                 ApplicationStatuses.Rejected,
                 _leaseLifecycleService.ValidateApplicationRejection);
+        }
+
+        [HttpPost("{id}/activate")]
+        public IActionResult Activate(int id, [FromBody] LeaseActivationRequestDto request)
+        {
+            return StatusCode(StatusCodes.Status501NotImplemented);
         }
 
         private async Task<IActionResult> ChangeApplicationStatus(
