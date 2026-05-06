@@ -13,6 +13,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<ILeaseLifecycleService, LeaseLifecycleService>();
 builder.Services.AddScoped<IMaintenanceLifecycleService, MaintenanceLifecycleService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddHttpClient("MaintenanceAPI", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5212/");
+});
 
 var app = builder.Build();
 
