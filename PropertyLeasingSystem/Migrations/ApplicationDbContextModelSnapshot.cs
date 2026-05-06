@@ -338,7 +338,14 @@ namespace PropertyLeasingSystem.Migrations
                     b.Property<decimal>("HourlyRate")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
                     b.Property<string>("RoleType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SkillType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
