@@ -23,6 +23,36 @@ namespace PropertyLeasingSystem.Services
             [ApplicationStatuses.Renewed] = new HashSet<string> { ApplicationStatuses.Terminated }
         };
 
+        public WorkflowValidationResult ValidateMoveToScreening(
+            LeaseApplication application,
+            string userRole)
+        {
+            return ValidateApplicationTransition(
+                application,
+                ApplicationStatuses.Screening,
+                userRole);
+        }
+
+        public WorkflowValidationResult ValidateApplicationApproval(
+            LeaseApplication application,
+            string userRole)
+        {
+            return ValidateApplicationTransition(
+                application,
+                ApplicationStatuses.Approved,
+                userRole);
+        }
+
+        public WorkflowValidationResult ValidateApplicationRejection(
+            LeaseApplication application,
+            string userRole)
+        {
+            return ValidateApplicationTransition(
+                application,
+                ApplicationStatuses.Rejected,
+                userRole);
+        }
+
         public WorkflowValidationResult ValidateApplicationTransition(
             LeaseApplication application,
             string nextStatus,
