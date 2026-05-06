@@ -51,6 +51,30 @@ namespace PropertyLeasingSystem.Services
             return WorkflowValidationResult.Success();
         }
 
+        public WorkflowValidationResult ValidateStaffAssignment(
+            MaintenanceRequest request,
+            Staff staff,
+            string userRole)
+        {
+            if (request == null)
+                return WorkflowValidationResult.Failure("Maintenance request was not found.");
+
+            if (staff == null)
+                return WorkflowValidationResult.Failure("Staff member was not found.");
+
+            if (!IsRoleAllowed(MaintenanceStatuses.Assigned, userRole))
+                return WorkflowValidationResult.Failure("Only a Property Manager can assign maintenance staff.");
+
+            if (!staff.IsAvailable)
+                return WorkflowValidationResult.Failure($"{staff.FullName} is not currently available for assignment.");
+
+            var transitionResult = ValidateMaintenanceTransition(request, MaintenanceStatuses.Assigned, userRole);
+            if (!transitionResult.IsValid)
+                return transitionResult;
+
+            return WorkflowValidationResult.Success();
+        }
+
         private static bool IsRoleAllowed(string nextStatus, string userRole)
         {
             if (!RolesByNextStatus.TryGetValue(nextStatus, out var allowedRoles))
