@@ -54,9 +54,27 @@ namespace PropertyLeasingSystem.Controllers
         }
 
         [HttpPost("{id}/activate")]
-        public IActionResult Activate(int id, [FromBody] LeaseActivationRequestDto request)
+        public async Task<IActionResult> Activate(int id, [FromBody] LeaseActivationRequestDto request)
         {
-            return StatusCode(StatusCodes.Status501NotImplemented);
+            var application = await _context.Applications
+                .Include(a => a.Unit)
+                .FirstOrDefaultAsync(a => a.ApplicationId == id);
+
+            if (application == null)
+                return NotFound("Application was not found.");
+
+            if (application.Unit == null)
+                return NotFound("Unit was not found.");
+
+            return Ok(new
+            {
+                application.ApplicationId,
+                application.Status,
+                application.UnitId,
+                UnitAvailable = application.Unit.IsAvailable,
+                request.StartDate,
+                request.EndDate
+            });
         }
 
         private async Task<IActionResult> ChangeApplicationStatus(
