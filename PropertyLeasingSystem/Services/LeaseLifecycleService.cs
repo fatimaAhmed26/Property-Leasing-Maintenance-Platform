@@ -102,6 +102,25 @@ namespace PropertyLeasingSystem.Services
             return WorkflowValidationResult.Success();
         }
 
+        public WorkflowValidationResult ValidateLeaseActivation(
+            LeaseApplication application,
+            Unit unit,
+            string userRole,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var activationResult = ValidateLeaseActivation(application, unit, userRole);
+
+            if (!activationResult.IsValid)
+                return activationResult;
+
+            return ValidateLeaseDates(new Lease
+            {
+                StartDate = startDate,
+                EndDate = endDate
+            });
+        }
+
         public WorkflowValidationResult ValidateLeaseDates(Lease lease)
         {
             if (lease == null)
