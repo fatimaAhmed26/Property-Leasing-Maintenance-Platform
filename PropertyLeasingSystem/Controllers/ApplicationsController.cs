@@ -77,6 +77,20 @@ namespace PropertyLeasingSystem.Controllers
             if (!validation.IsValid)
                 return BadRequest(validation.ErrorMessage);
 
+            var lease = new PropertyLeasing.API.Models.Lease
+            {
+                ApplicationId = application.ApplicationId,
+                UnitId = application.UnitId,
+                TenantId = application.TenantId,
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
+                MonthlyRent = application.Unit.RentAmount,
+                Status = ApplicationStatuses.LeaseActive,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Leases.Add(lease);
+
             return Ok(new
             {
                 application.ApplicationId,
