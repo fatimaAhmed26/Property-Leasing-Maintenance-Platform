@@ -67,3 +67,13 @@
 | 30 | Maintenance Staff moves to In Progress | MaintenanceStaff | Status changes to In Progress |
 | 31 | Property Manager tries to move to In Progress | PropertyManager | 400 Bad Request |
 | 32 | Tenant tries to move to In Progress | Tenant | 400 Bad Request |
+
+## Known Blockers From Other Members
+
+| # | Blocker | Blocked Part | Waiting On |
+|---|---------|-------------|------------|
+| 1 | MVC application project does not exist | MVC controller skeletons (Part 7) | Member 4 or shared setup |
+| 2 | MVC authentication workflow not implemented | Controller auth and role checks (Part 8) | Member 4 or shared setup |
+| 3 | Razor views not built | Returning views from MVC controllers | Member 4 |
+| 4 | No MaintenanceRequest controller exists yet | Testing maintenance workflow via API | Member 2 or shared setup |
+| 5 | SignalR real-time board not implemented | Live status update testing | Outside Member 3 scope |
