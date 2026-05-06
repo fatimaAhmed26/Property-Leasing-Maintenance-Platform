@@ -1,6 +1,6 @@
-using PropertyLeasingSystem.Models;
+using PropertyLeasing.API.Models;
 
-using LeaseApplication = PropertyLeasingSystem.Models.Application;
+using LeaseApplication = PropertyLeasing.API.Models.Application;
 
 namespace PropertyLeasingSystem.Services
 {

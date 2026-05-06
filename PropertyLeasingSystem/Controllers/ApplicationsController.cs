@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PropertyLeasingSystem.Data;
+using PropertyLeasing.API.Data;
 using PropertyLeasingSystem.DTOs;
 using PropertyLeasingSystem.Services;
 using System.Security.Claims;
 
-using LeaseApplication = PropertyLeasingSystem.Models.Application;
+using LeaseApplication = PropertyLeasing.API.Models.Application;
 
 namespace PropertyLeasingSystem.Controllers
 {

@@ -1,4 +1,4 @@
-using PropertyLeasingSystem.Models;
+using PropertyLeasing.API.Models;
 
 namespace PropertyLeasingSystem.Services
 {
