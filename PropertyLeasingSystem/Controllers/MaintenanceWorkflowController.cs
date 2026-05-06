@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropertyLeasing.API.Data;
+using PropertyLeasing.API.Models;
+using PropertyLeasingSystem.DTOs;
 using PropertyLeasingSystem.Services;
 using System.Security.Claims;
 
@@ -29,6 +31,54 @@ namespace PropertyLeasingSystem.Controllers
                 .ToListAsync();
 
             return View(requests);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = WorkflowRoles.Tenant)]
+        public IActionResult Submit()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = WorkflowRoles.Tenant)]
+        public async Task<IActionResult> Submit(SubmitMaintenanceRequestDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Please fill in all required fields.";
+                return View(dto);
+            }
+
+            var tenantIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(tenantIdClaim, out int tenantId))
+            {
+                TempData["Error"] = "Unable to identify tenant. Please log in again.";
+                return View(dto);
+            }
+
+            var unit = await _context.Units.FirstOrDefaultAsync(u => u.UnitId == dto.UnitId);
+            if (unit == null)
+            {
+                TempData["Error"] = "Unit was not found.";
+                return View(dto);
+            }
+
+            var request = new MaintenanceRequest
+            {
+                UnitId = dto.UnitId,
+                TenantId = tenantId,
+                Description = dto.Description,
+                Priority = dto.Priority,
+                Status = MaintenanceStatuses.Submitted,
+                ReportedAt = DateTime.UtcNow
+            };
+
+            _context.MaintenanceRequests.Add(request);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Maintenance request submitted. Your ticket number is {request.RequestId}.";
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
