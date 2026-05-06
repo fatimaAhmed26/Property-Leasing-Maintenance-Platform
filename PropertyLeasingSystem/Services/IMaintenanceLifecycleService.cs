@@ -8,5 +8,10 @@ namespace PropertyLeasingSystem.Services
             MaintenanceRequest request,
             string nextStatus,
             string userRole);
+
+        WorkflowValidationResult ValidateStaffAssignment(
+            MaintenanceRequest request,
+            Staff staff,
+            string userRole);
     }
 }

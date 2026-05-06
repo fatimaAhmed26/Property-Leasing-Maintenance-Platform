@@ -11,8 +11,8 @@ namespace PropertyLeasingSystem.Data
         {
             // 1. Seed Staff
             modelBuilder.Entity<Staff>().HasData(
-                new Staff { StaffId = 1, FullName = "Ahmed Ali", Email = "manager@test.com", RoleType = "Property Manager", HourlyRate = 25m },
-                new Staff { StaffId = 2, FullName = "Ahmed Qusy", Email = "maintenance@test.com", RoleType = "Maintenance Staff", HourlyRate = 15m }
+                new Staff { StaffId = 1, FullName = "Ahmed Ali", Email = "manager@test.com", RoleType = "Property Manager", HourlyRate = 25m, SkillType = "Management", IsAvailable = true },
+                new Staff { StaffId = 2, FullName = "Ahmed Qusy", Email = "maintenance@test.com", RoleType = "Maintenance Staff", HourlyRate = 15m, SkillType = "Plumbing", IsAvailable = true }
             );
 
             // 2. Seed Properties

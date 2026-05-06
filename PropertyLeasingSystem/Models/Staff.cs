@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace PropertyLeasing.API.Models
 {
@@ -14,6 +14,10 @@ namespace PropertyLeasing.API.Models
         public string RoleType { get; set; }
 
         public decimal HourlyRate { get; set; }
+
+        public string SkillType { get; set; }
+
+        public bool IsAvailable { get; set; } = true;
 
         public ICollection<MaintenanceLog>? MaintenanceLogs { get; set; }
     }
