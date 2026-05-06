@@ -102,6 +102,23 @@ namespace PropertyLeasingSystem.Services
             return WorkflowValidationResult.Success();
         }
 
+        public WorkflowValidationResult ValidateLeaseDates(Lease lease)
+        {
+            if (lease == null)
+                return WorkflowValidationResult.Failure("Lease was not found.");
+
+            if (lease.StartDate == default)
+                return WorkflowValidationResult.Failure("Lease start date is required.");
+
+            if (lease.EndDate == default)
+                return WorkflowValidationResult.Failure("Lease end date is required.");
+
+            if (lease.EndDate <= lease.StartDate)
+                return WorkflowValidationResult.Failure("Lease start date must be before lease end date.");
+
+            return WorkflowValidationResult.Success();
+        }
+
         private static bool IsPropertyManager(string userRole)
         {
             return string.Equals(userRole, WorkflowRoles.PropertyManager, StringComparison.OrdinalIgnoreCase);

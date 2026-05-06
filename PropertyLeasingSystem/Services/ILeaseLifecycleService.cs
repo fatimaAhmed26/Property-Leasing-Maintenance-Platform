@@ -27,5 +27,7 @@ namespace PropertyLeasingSystem.Services
             LeaseApplication application,
             Unit unit,
             string userRole);
+
+        WorkflowValidationResult ValidateLeaseDates(Lease lease);
     }
 }
