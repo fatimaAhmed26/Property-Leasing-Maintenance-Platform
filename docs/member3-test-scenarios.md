@@ -44,3 +44,26 @@
 |---|----------|-----------|-----------------|
 | 20 | Assign valid staff | Request is Submitted | Status changes to Assigned |
 | 21 | Assign on already assigned request | Status is Assigned | 400 Bad Request |
+
+## Role Access Test Cases
+
+### Lease Workflow
+
+| # | Scenario | Role | Expected Result |
+|---|----------|------|-----------------|
+| 22 | Tenant tries to approve application | Tenant | 403 Forbidden |
+| 23 | Tenant tries to activate lease | Tenant | 403 Forbidden |
+| 24 | Maintenance Staff tries to approve application | MaintenanceStaff | 403 Forbidden |
+| 25 | Property Manager approves application | PropertyManager | 200 OK |
+| 26 | Unauthenticated user calls approve | None | 401 Unauthorized |
+
+### Maintenance Workflow
+
+| # | Scenario | Role | Expected Result |
+|---|----------|------|-----------------|
+| 27 | Tenant tries to assign staff | Tenant | 400 Bad Request |
+| 28 | Maintenance Staff tries to assign staff | MaintenanceStaff | 400 Bad Request |
+| 29 | Property Manager assigns staff | PropertyManager | Status changes to Assigned |
+| 30 | Maintenance Staff moves to In Progress | MaintenanceStaff | Status changes to In Progress |
+| 31 | Property Manager tries to move to In Progress | PropertyManager | 400 Bad Request |
+| 32 | Tenant tries to move to In Progress | Tenant | 400 Bad Request |
