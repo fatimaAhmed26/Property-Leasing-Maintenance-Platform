@@ -66,6 +66,17 @@ namespace PropertyLeasingSystem.Controllers
             if (application.Unit == null)
                 return NotFound("Unit was not found.");
 
+            var userRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+            var validation = _leaseLifecycleService.ValidateLeaseActivation(
+                application,
+                application.Unit,
+                userRole,
+                request.StartDate,
+                request.EndDate);
+
+            if (!validation.IsValid)
+                return BadRequest(validation.ErrorMessage);
+
             return Ok(new
             {
                 application.ApplicationId,
