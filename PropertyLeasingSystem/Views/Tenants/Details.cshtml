@@ -1,0 +1,120 @@
+@model PropertyLeasing.API.Models.Tenant
+@{
+    ViewData["Title"] = $"Tenant - {Model.FullName}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>@Model.FullName</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to Tenants</a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header"><h5 class="mb-0">Contact Info</h5></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
+                    <dt class="col-sm-4">Phone</dt>
+                    <dd class="col-sm-8">@Model.Phone</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Applications</h4>
+<div class="table-responsive mb-4">
+    <table class="table table-sm table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Application ID</th>
+                <th>Unit</th>
+                <th>Submitted</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model.Applications ?? new List<PropertyLeasing.API.Models.Application>())
+            {
+                <tr>
+                    <td>#@a.ApplicationId</td>
+                    <td>@a.Unit?.UnitNumber</td>
+                    <td>@a.SubmittedAt.ToString("MMM d, yyyy")</td>
+                    <td><span class="badge bg-info text-dark">@a.Status</span></td>
+                </tr>
+            }
+            @if (!(Model.Applications?.Any() ?? false))
+            {
+                <tr><td colspan="4" class="text-muted">No applications.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<h4>Leases</h4>
+<div class="table-responsive mb-4">
+    <table class="table table-sm table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Lease ID</th>
+                <th>Unit</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Rent</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var l in Model.Leases ?? new List<PropertyLeasing.API.Models.Lease>())
+            {
+                <tr>
+                    <td>#@l.LeaseId</td>
+                    <td>@l.Unit?.UnitNumber</td>
+                    <td>@l.StartDate.ToString("MMM d, yyyy")</td>
+                    <td>@l.EndDate.ToString("MMM d, yyyy")</td>
+                    <td>@l.MonthlyRent.ToString("C")</td>
+                    <td><span class="badge bg-success">@l.Status</span></td>
+                </tr>
+            }
+            @if (!(Model.Leases?.Any() ?? false))
+            {
+                <tr><td colspan="6" class="text-muted">No leases.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<h4>Maintenance Requests</h4>
+<div class="table-responsive">
+    <table class="table table-sm table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Ticket #</th>
+                <th>Unit</th>
+                <th>Description</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Reported</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in Model.MaintenanceRequests ?? new List<PropertyLeasing.API.Models.MaintenanceRequest>())
+            {
+                <tr>
+                    <td>#@m.RequestId</td>
+                    <td>@m.Unit?.UnitNumber</td>
+                    <td>@m.Description</td>
+                    <td><span class="badge bg-warning text-dark">@m.Priority</span></td>
+                    <td>@m.Status</td>
+                    <td>@m.ReportedAt.ToString("MMM d, yyyy")</td>
+                </tr>
+            }
+            @if (!(Model.MaintenanceRequests?.Any() ?? false))
+            {
+                <tr><td colspan="6" class="text-muted">No maintenance requests.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,184 @@
+@{
+    ViewData["Title"] = "Maintenance Board (Live)";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2>Live Maintenance Board</h2>
+        <p class="text-muted mb-0">Real-time updates via SignalR &mdash; <span id="connectionStatus" class="badge bg-secondary">Connecting...</span></p>
+    </div>
+    <button id="refreshBtn" class="btn btn-outline-primary" onclick="loadRequests()">Refresh</button>
+</div>
+
+<div id="boardContainer">
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading maintenance requests...</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script>
+        const HUB_URL = "/hubs/maintenance";
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(HUB_URL)
+            .withAutomaticReconnect()
+            .build();
+
+        connection.onreconnecting(() => {
+            document.getElementById("connectionStatus").textContent = "Reconnecting...";
+            document.getElementById("connectionStatus").className = "badge bg-warning text-dark";
+        });
+
+        connection.onreconnected(() => {
+            document.getElementById("connectionStatus").textContent = "Connected";
+            document.getElementById("connectionStatus").className = "badge bg-success";
+        });
+
+        connection.onclose(() => {
+            document.getElementById("connectionStatus").textContent = "Disconnected";
+            document.getElementById("connectionStatus").className = "badge bg-danger";
+        });
+
+        // Listen for status updates broadcast from the API hub
+        connection.on("MaintenanceStatusUpdated", function (requestId, newStatus) {
+            const row = document.querySelector(`tr[data-id="${requestId}"]`);
+            if (row) {
+                const statusCell = row.querySelector(".status-cell");
+                if (statusCell) {
+                    statusCell.innerHTML = statusBadge(newStatus);
+                }
+                // flash the row
+                row.classList.add("table-warning");
+                setTimeout(() => row.classList.remove("table-warning"), 2000);
+            } else {
+                loadRequests();
+            }
+        });
+
+        connection.on("NewMaintenanceRequest", function () {
+            loadRequests();
+        });
+
+        async function startConnection() {
+            try {
+                await connection.start();
+                await connection.invoke("JoinMaintenanceBoard");
+                document.getElementById("connectionStatus").textContent = "Connected";
+                document.getElementById("connectionStatus").className = "badge bg-success";
+            } catch (err) {
+                document.getElementById("connectionStatus").textContent = "Error";
+                document.getElementById("connectionStatus").className = "badge bg-danger";
+                console.error("SignalR connection error:", err);
+            }
+        }
+
+        function statusBadge(status) {
+            const map = {
+                "Submitted": "bg-secondary",
+                "Assigned": "bg-info text-dark",
+                "InProgress": "bg-warning text-dark",
+                "Resolved": "bg-success",
+                "Closed": "bg-dark"
+            };
+            const cls = map[status] || "bg-light text-dark";
+            return `<span class="badge ${cls}">${status}</span>`;
+        }
+
+        function priorityBadge(priority) {
+            const map = { "High": "bg-danger", "Medium": "bg-warning text-dark", "Low": "bg-secondary" };
+            const cls = map[priority] || "bg-secondary";
+            return `<span class="badge ${cls}">${priority}</span>`;
+        }
+
+        async function loadRequests() {
+            try {
+                const resp = await fetch("/Maintenance/GetRequests");
+                if (!resp.ok) {
+                    document.getElementById("boardContainer").innerHTML =
+                        `<div class="alert alert-warning">Could not load maintenance data (${resp.status}).</div>`;
+                    return;
+                }
+                const data = await resp.json();
+                renderBoard(data);
+            } catch (e) {
+                document.getElementById("boardContainer").innerHTML =
+                    `<div class="alert alert-danger">Could not load maintenance requests. Please refresh the page.</div>`;
+            }
+        }
+
+        function renderBoard(requests) {
+            if (!requests || requests.length === 0) {
+                document.getElementById("boardContainer").innerHTML =
+                    '<p class="text-muted text-center py-4">No maintenance requests found.</p>';
+                return;
+            }
+
+            const columns = ["Submitted", "Assigned", "InProgress", "Resolved", "Closed"];
+            const groups = {};
+            columns.forEach(c => groups[c] = []);
+            requests.forEach(r => {
+                if (groups[r.status] !== undefined) groups[r.status].push(r);
+                else groups["Submitted"].push(r);
+            });
+
+            let html = '<div class="row">';
+            columns.forEach(col => {
+                const items = groups[col];
+                html += `<div class="col">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <strong>${col === "InProgress" ? "In Progress" : col}</strong>
+                            <span class="badge bg-primary rounded-pill">${items.length}</span>
+                        </div>
+                        <div class="card-body p-2">`;
+                if (items.length === 0) {
+                    html += `<p class="text-muted text-center small mt-3">Empty</p>`;
+                }
+                items.forEach(r => {
+                    html += `<div class="card mb-2 shadow-sm" data-id="${r.requestId || r.id || ''}">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between">
+                                <strong class="small">Ticket #${r.requestId || r.id}</strong>
+                                ${priorityBadge(r.priority)}
+                            </div>
+                            <p class="small mb-1 mt-1">${r.description || ''}</p>
+                            <small class="text-muted">Unit: ${r.unitId || ''}</small>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div></div>`;
+            });
+            html += '</div>';
+
+            // Also render as a table with data-id attributes for live updates
+            html += `<h5 class="mt-4">All Requests</h5>
+            <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light">
+                    <tr><th>#</th><th>Unit</th><th>Description</th><th>Priority</th><th>Status</th><th>Reported</th></tr>
+                </thead>
+                <tbody>`;
+            requests.forEach(r => {
+                html += `<tr data-id="${r.requestId || r.id}">
+                    <td>#${r.requestId || r.id}</td>
+                    <td>${r.unitId || ''}</td>
+                    <td>${(r.description || '').substring(0, 60)}${(r.description || '').length > 60 ? '...' : ''}</td>
+                    <td>${priorityBadge(r.priority)}</td>
+                    <td class="status-cell">${statusBadge(r.status)}</td>
+                    <td>${r.reportedAt ? new Date(r.reportedAt).toLocaleDateString() : ''}</td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+
+            document.getElementById("boardContainer").innerHTML = html;
+        }
+
+        startConnection();
+        loadRequests();
+    </script>
+}

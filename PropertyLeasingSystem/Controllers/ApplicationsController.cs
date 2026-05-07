@@ -2,136 +2,105 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropertyLeasing.API.Data;
-using PropertyLeasingSystem.DTOs;
-using PropertyLeasingSystem.Services;
+using PropertyLeasing.API.Services;
 using System.Security.Claims;
 
 using LeaseApplication = PropertyLeasing.API.Models.Application;
 
 namespace PropertyLeasingSystem.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    [Authorize(Roles = WorkflowRoles.PropertyManager)]
-    public class ApplicationsController : ControllerBase
+    [Authorize]
+    public class ApplicationsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly ILeaseLifecycleService _leaseLifecycleService;
 
-        public ApplicationsController(
-            ApplicationDbContext context,
-            ILeaseLifecycleService leaseLifecycleService)
+        public ApplicationsController(ApplicationDbContext context)
         {
             _context = context;
-            _leaseLifecycleService = leaseLifecycleService;
         }
 
-        [HttpPost("{id}/screening")]
-        public async Task<IActionResult> MoveToScreening(int id)
+        [Authorize(Roles = WorkflowRoles.PropertyManager)]
+        public async Task<IActionResult> Index()
         {
-            return await ChangeApplicationStatus(
-                id,
-                ApplicationStatuses.Screening,
-                _leaseLifecycleService.ValidateMoveToScreening);
-        }
-
-        [HttpPost("{id}/approve")]
-        public async Task<IActionResult> Approve(int id)
-        {
-            return await ChangeApplicationStatus(
-                id,
-                ApplicationStatuses.Approved,
-                _leaseLifecycleService.ValidateApplicationApproval);
-        }
-
-        [HttpPost("{id}/reject")]
-        public async Task<IActionResult> Reject(int id)
-        {
-            return await ChangeApplicationStatus(
-                id,
-                ApplicationStatuses.Rejected,
-                _leaseLifecycleService.ValidateApplicationRejection);
-        }
-
-        [HttpPost("{id}/activate")]
-        public async Task<IActionResult> Activate(int id, [FromBody] LeaseActivationRequestDto request)
-        {
-            var application = await _context.Applications
+            var applications = await _context.Applications
+                .Include(a => a.Tenant)
                 .Include(a => a.Unit)
-                .FirstOrDefaultAsync(a => a.ApplicationId == id);
+                    .ThenInclude(u => u!.Property)
+                .OrderByDescending(a => a.SubmittedAt)
+                .ToListAsync();
+            return View(applications);
+        }
 
-            if (application == null)
-                return NotFound("Application was not found.");
+        [HttpGet]
+        [Authorize(Roles = WorkflowRoles.Tenant)]
+        public async Task<IActionResult> Submit()
+        {
+            var availableUnits = await _context.Units
+                .Include(u => u.Property)
+                .Where(u => u.IsAvailable)
+                .ToListAsync();
+            ViewBag.AvailableUnits = availableUnits;
+            return View();
+        }
 
-            if (application.Unit == null)
-                return NotFound("Unit was not found.");
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = WorkflowRoles.Tenant)]
+        public async Task<IActionResult> Submit(int unitId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var userRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
-            var validation = _leaseLifecycleService.ValidateLeaseActivation(
-                application,
-                application.Unit,
-                userRole,
-                request.StartDate,
-                request.EndDate);
-
-            if (!validation.IsValid)
-                return BadRequest(validation.ErrorMessage);
-
-            var lease = new PropertyLeasing.API.Models.Lease
+            // Find or create tenant linked to the current user
+            var appUser = await _context.Users.FindAsync(userId);
+            if (appUser == null)
             {
-                ApplicationId = application.ApplicationId,
-                UnitId = application.UnitId,
-                TenantId = application.TenantId,
-                StartDate = request.StartDate,
-                EndDate = request.EndDate,
-                MonthlyRent = application.Unit.RentAmount,
-                Status = ApplicationStatuses.LeaseActive,
-                CreatedAt = DateTime.UtcNow
+                TempData["Error"] = "User not found.";
+                return RedirectToAction(nameof(Submit));
+            }
+
+            int tenantId;
+            if (appUser.TenantId.HasValue)
+            {
+                tenantId = appUser.TenantId.Value;
+            }
+            else
+            {
+                // Auto-create a tenant record for this user
+                var tenant = new PropertyLeasing.API.Models.Tenant
+                {
+                    FullName = appUser.FullName,
+                    Email = appUser.Email ?? string.Empty,
+                    Phone = appUser.PhoneNumber ?? string.Empty
+                };
+                _context.Tenants.Add(tenant);
+                await _context.SaveChangesAsync();
+
+                appUser.TenantId = tenant.TenantId;
+                await _context.SaveChangesAsync();
+                tenantId = tenant.TenantId;
+            }
+
+            var unit = await _context.Units.FindAsync(unitId);
+            if (unit == null || !unit.IsAvailable)
+            {
+                TempData["Error"] = "Selected unit is not available.";
+                return RedirectToAction(nameof(Submit));
+            }
+
+            var application = new LeaseApplication
+            {
+                TenantId = tenantId,
+                UnitId = unitId,
+                SubmittedAt = DateTime.UtcNow,
+                Status = ApplicationStatuses.Submitted
             };
 
-            _context.Leases.Add(lease);
-
-            application.Status = ApplicationStatuses.LeaseActive;
-            application.ProcessedAt = DateTime.UtcNow;
-            application.Unit.IsAvailable = false;
-
+            _context.Applications.Add(application);
             await _context.SaveChangesAsync();
 
-            return Ok(new
-            {
-                lease.LeaseId,
-                lease.ApplicationId,
-                lease.UnitId,
-                lease.TenantId,
-                lease.StartDate,
-                lease.EndDate,
-                lease.MonthlyRent,
-                lease.Status,
-                lease.CreatedAt
-            });
+            TempData["Success"] = $"Application submitted successfully. Application ID: {application.ApplicationId}";
+            return RedirectToAction("Index", "Home");
         }
 
-        private async Task<IActionResult> ChangeApplicationStatus(
-            int id,
-            string nextStatus,
-            Func<LeaseApplication, string, WorkflowValidationResult> validate)
-        {
-            var application = await _context.Applications
-                .FirstOrDefaultAsync(a => a.ApplicationId == id);
-
-            if (application == null)
-                return NotFound("Application was not found.");
-
-            var userRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
-            var validation = validate(application, userRole);
-
-            if (!validation.IsValid)
-                return BadRequest(validation.ErrorMessage);
-
-            application.Status = nextStatus;
-            await _context.SaveChangesAsync();
-
-            return Ok(application);
-        }
     }
 }

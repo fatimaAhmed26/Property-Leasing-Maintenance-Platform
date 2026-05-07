@@ -1,0 +1,132 @@
+@page
+@model PropertyLeasing.Reporting.Pages.Reports.MaintenanceBacklogModel
+@{
+    ViewData["Title"] = "Maintenance Backlog";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="bi bi-tools text-secondary"></i> Maintenance Backlog
+    </h2>
+    <a asp-page="/Dashboard" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-warning">@Model.ErrorMessage</div>
+}
+
+<div class="row g-4">
+    <!-- Status Summary -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent border-0 fw-bold">
+                Summary by Status
+            </div>
+            <div class="card-body">
+                @if (Model.Backlog?.Count > 0)
+                {
+                    var total = Model.Backlog.Sum(x => x.Count);
+                    @foreach (var item in Model.Backlog)
+                    {
+                        var pct = total > 0 ? (item.Count * 100.0 / total) : 0;
+                        var (badgeClass, barColor) = item.Status switch
+                        {
+                            "Pending" => ("bg-warning text-dark", "#ffc107"),
+                            "InProgress" => ("bg-info text-dark", "#0dcaf0"),
+                            "Completed" => ("bg-success", "#198754"),
+                            "Cancelled" => ("bg-secondary", "#6c757d"),
+                            _ => ("bg-light text-dark", "#dee2e6")
+                        };
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge @badgeClass">@item.Status</span>
+                                <span class="fw-bold">@item.Count</span>
+                            </div>
+                            <div class="progress" style="height:10px;">
+                                <div class="progress-bar" style="width:@pct.ToString("F0")%; background-color:@barColor;"></div>
+                            </div>
+                            <div class="text-end text-muted small">@pct.ToString("F1")% of total</div>
+                        </div>
+                    }
+                    <hr />
+                    <div class="d-flex justify-content-between fw-semibold">
+                        <span>Total Requests</span>
+                        <span>@total</span>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No backlog data available.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Maintenance List -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0 fw-bold">
+                All Maintenance Requests
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Requests?.Count > 0)
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Title</th>
+                                    <th>Property / Unit</th>
+                                    <th>Tenant</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in Model.Requests)
+                                {
+                                    var statusBadge = r.Status switch
+                                    {
+                                        "Pending" => "bg-warning text-dark",
+                                        "InProgress" => "bg-info text-dark",
+                                        "Completed" => "bg-success",
+                                        "Cancelled" => "bg-secondary",
+                                        _ => "bg-light text-dark"
+                                    };
+                                    var priorityBadge = r.Priority switch
+                                    {
+                                        "High" => "bg-danger",
+                                        "Medium" => "bg-warning text-dark",
+                                        "Low" => "bg-secondary",
+                                        _ => "bg-light text-dark"
+                                    };
+                                    <tr>
+                                        <td class="text-muted small">#@r.Id</td>
+                                        <td class="fw-semibold">@r.Title</td>
+                                        <td class="text-muted small">
+                                            @r.PropertyName<br />
+                                            <span class="badge bg-light text-dark border">Unit @r.UnitNumber</span>
+                                        </td>
+                                        <td class="small">@r.TenantName</td>
+                                        <td><span class="badge @priorityBadge">@r.Priority</span></td>
+                                        <td><span class="badge @statusBadge">@r.Status</span></td>
+                                        <td class="text-muted small">@r.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 text-muted text-center">No maintenance requests found.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

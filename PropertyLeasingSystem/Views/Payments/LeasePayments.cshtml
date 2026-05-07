@@ -1,0 +1,82 @@
+@model PropertyLeasing.API.Models.Lease
+@{
+    ViewData["Title"] = $"Payments - Lease #{Model.LeaseId}";
+    var isOverdue = (bool)(ViewBag.IsOverdue ?? false);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2>Lease #@Model.LeaseId Payment History</h2>
+        <p class="text-muted mb-0">
+            @Model.Tenant?.FullName &mdash; Unit @Model.Unit?.UnitNumber &mdash;
+            @Model.StartDate.ToString("MMM d, yyyy") to @Model.EndDate.ToString("MMM d, yyyy")
+        </p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back</a>
+</div>
+
+@if (isOverdue)
+{
+    <div class="alert alert-danger">
+        <strong>Overdue!</strong> This lease has outstanding rent payments.
+    </div>
+}
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Monthly Rent</h5>
+                <p class="display-6 text-primary">@Model.MonthlyRent.ToString("C")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Total Paid</h5>
+                <p class="display-6 text-success">@((Model.Payments?.Sum(p => p.Amount) ?? 0).ToString("C"))</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Payments</h5>
+                <p class="display-6">@(Model.Payments?.Count ?? 0)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Payment ID</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Type</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model.Payments ?? new List<PropertyLeasing.API.Models.Payment>())
+            {
+                <tr>
+                    <td>#@p.PaymentId</td>
+                    <td>@p.PaymentDate.ToString("MMM d, yyyy h:mm tt")</td>
+                    <td>@p.Amount.ToString("C")</td>
+                    <td>@p.Method</td>
+                    <td>@p.PaymentType</td>
+                    <td><span class="badge bg-success">@p.Status</span></td>
+                </tr>
+            }
+            @if (!(Model.Payments?.Any() ?? false))
+            {
+                <tr><td colspan="6" class="text-center text-muted">No payments recorded yet.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

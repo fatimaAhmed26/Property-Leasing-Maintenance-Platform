@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PropertyLeasingSystem.DTOs;
+using PropertyLeasing.API.DTOs;
 using System.Text.Json;
 
 namespace PropertyLeasingSystem.Controllers
@@ -30,10 +30,16 @@ namespace PropertyLeasingSystem.Controllers
                 return View();
             }
 
+            if (!int.TryParse(ticketNumber, out int ticketId))
+            {
+                TempData["Error"] = "Ticket number must be a valid number.";
+                return View();
+            }
+
             var client = _httpClientFactory.CreateClient("MaintenanceAPI");
 
             var response = await client.GetAsync(
-                $"api/maintenance/lookup?ticketNumber={ticketNumber}&phoneNumber={phoneNumber}");
+                $"api/maintenance/lookup?ticketId={ticketId}&phone={Uri.EscapeDataString(phoneNumber)}");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound ||
                 response.StatusCode == System.Net.HttpStatusCode.BadRequest)

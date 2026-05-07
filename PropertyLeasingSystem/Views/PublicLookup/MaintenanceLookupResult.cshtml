@@ -1,0 +1,62 @@
+@model PropertyLeasing.API.DTOs.MaintenanceLookupResultDto
+@{
+    ViewData["Title"] = "Maintenance Request Status";
+    Layout = "_Layout";
+}
+
+<div class="container py-5" style="max-width:680px;">
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="bi bi-check-circle"></i> Maintenance Request Found</h4>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Tenant</dt>
+                <dd class="col-sm-8">@Model.TenantName</dd>
+
+                <dt class="col-sm-4">Description</dt>
+                <dd class="col-sm-8">@Model.Description</dd>
+
+                <dt class="col-sm-4">Priority</dt>
+                <dd class="col-sm-8">
+                    <span class="badge @(Model.Priority == "High" ? "bg-danger" : Model.Priority == "Medium" ? "bg-warning text-dark" : "bg-secondary")">
+                        @Model.Priority
+                    </span>
+                </dd>
+
+                <dt class="col-sm-4">Status</dt>
+                <dd class="col-sm-8">
+                    <span class="badge bg-primary">@Model.Status</span>
+                </dd>
+
+                <dt class="col-sm-4">Reported At</dt>
+                <dd class="col-sm-8">@Model.ReportedAt.ToString("dd MMM yyyy HH:mm")</dd>
+            </dl>
+
+            @if (Model.Logs != null && Model.Logs.Any())
+            {
+                <hr />
+                <h6 class="fw-semibold mb-3">Activity Log</h6>
+                <ul class="list-group list-group-flush">
+                    @foreach (var log in Model.Logs)
+                    {
+                        <li class="list-group-item px-0">
+                            <div class="fw-semibold">@log.ActionTaken</div>
+                            <small class="text-muted">
+                                Started: @log.WorkStarted.ToString("dd MMM yyyy HH:mm")
+                                @if (log.WorkCompleted.HasValue)
+                                {
+                                    <span> &mdash; Completed: @log.WorkCompleted.Value.ToString("dd MMM yyyy HH:mm")</span>
+                                }
+                            </small>
+                        </li>
+                    }
+                </ul>
+            }
+
+            <div class="mt-4">
+                <a asp-controller="PublicLookup" asp-action="MaintenanceLookup" class="btn btn-outline-primary">Search Again</a>
+            </div>
+        </div>
+    </div>
+</div>

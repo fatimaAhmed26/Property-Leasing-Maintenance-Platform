@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PropertyLeasing.API.Data;
 using PropertyLeasing.API.Models;
-using PropertyLeasingSystem.DTOs;
-using PropertyLeasingSystem.Services;
+using PropertyLeasing.API.DTOs;
+using PropertyLeasing.API.Services;
+using PropertyLeasingSystem.Hubs;
 using System.Security.Claims;
 
 namespace PropertyLeasingSystem.Controllers
@@ -14,33 +17,70 @@ namespace PropertyLeasingSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IMaintenanceLifecycleService _maintenanceLifecycleService;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly IHubContext<MaintenanceHub> _hub;
 
         public MaintenanceWorkflowController(
             ApplicationDbContext context,
-            IMaintenanceLifecycleService maintenanceLifecycleService)
+            IMaintenanceLifecycleService maintenanceLifecycleService,
+            UserManager<AppUser> userManager,
+            IHubContext<MaintenanceHub> hub)
         {
             _context = context;
             _maintenanceLifecycleService = maintenanceLifecycleService;
+            _userManager = userManager;
+            _hub = hub;
         }
 
         public async Task<IActionResult> Index()
         {
-            var requests = await _context.MaintenanceRequests
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var appUser = await _context.Users.FindAsync(userId);
+
+            IQueryable<MaintenanceRequest> query = _context.MaintenanceRequests
                 .Include(r => r.Tenant)
                 .Include(r => r.Unit)
-                .ToListAsync();
+                    .ThenInclude(u => u!.Property);
+
+            if (User.IsInRole(WorkflowRoles.Tenant) && appUser?.TenantId != null)
+                query = query.Where(r => r.TenantId == appUser.TenantId);
+            else if (User.IsInRole(WorkflowRoles.MaintenanceStaff) && appUser?.StaffId != null)
+                query = query.Where(r => r.AssignedStaffId == appUser.StaffId);
+
+            var requests = await query.OrderByDescending(r => r.ReportedAt).ToListAsync();
+
+            if (User.IsInRole(WorkflowRoles.PropertyManager))
+                ViewBag.StaffList = await _context.Staffs.Where(s => s.IsAvailable).ToListAsync();
 
             return View(requests);
         }
 
         [HttpGet]
         [Authorize(Roles = WorkflowRoles.Tenant)]
-        public IActionResult Submit()
+        public async Task<IActionResult> Submit()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var appUser = await _context.Users.FindAsync(userId);
+
+            if (appUser?.TenantId != null)
+            {
+                var leases = await _context.Leases
+                    .Include(l => l.Unit)
+                    .Where(l => l.TenantId == appUser.TenantId &&
+                           (l.Status == ApplicationStatuses.LeaseActive || l.Status == ApplicationStatuses.Renewed))
+                    .ToListAsync();
+                ViewBag.TenantUnits = leases.Select(l => l.Unit).ToList();
+            }
+            else
+            {
+                ViewBag.TenantUnits = new List<Unit>();
+            }
+
             return View();
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = WorkflowRoles.Tenant)]
         public async Task<IActionResult> Submit(SubmitMaintenanceRequestDto dto)
         {
@@ -50,10 +90,12 @@ namespace PropertyLeasingSystem.Controllers
                 return View(dto);
             }
 
-            var tenantIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(tenantIdClaim, out int tenantId))
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var appUser = await _context.Users.FindAsync(userId);
+
+            if (appUser?.TenantId == null)
             {
-                TempData["Error"] = "Unable to identify tenant. Please log in again.";
+                TempData["Error"] = "No tenant profile found. Please contact the property manager.";
                 return View(dto);
             }
 
@@ -67,7 +109,7 @@ namespace PropertyLeasingSystem.Controllers
             var request = new MaintenanceRequest
             {
                 UnitId = dto.UnitId,
-                TenantId = tenantId,
+                TenantId = appUser.TenantId.Value,
                 Description = dto.Description,
                 Priority = dto.Priority,
                 Status = MaintenanceStatuses.Submitted,
@@ -76,12 +118,14 @@ namespace PropertyLeasingSystem.Controllers
 
             _context.MaintenanceRequests.Add(request);
             await _context.SaveChangesAsync();
+            await _hub.Clients.Group("MaintenanceBoard").SendAsync("NewMaintenanceRequest");
 
             TempData["Success"] = $"Maintenance request submitted. Your ticket number is {request.RequestId}.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = WorkflowRoles.PropertyManager)]
         public async Task<IActionResult> Assign(int id, int staffId)
         {
@@ -105,13 +149,17 @@ namespace PropertyLeasingSystem.Controllers
             }
 
             request.Status = MaintenanceStatuses.Assigned;
+            request.AssignedStaffId = staffId > 0 ? staffId : null;
             await _context.SaveChangesAsync();
+            await _hub.Clients.Group("MaintenanceBoard").SendAsync("MaintenanceStatusUpdated", request.RequestId, MaintenanceStatuses.Assigned);
+            await NotifyTenant(request.TenantId, $"Your maintenance request #{request.RequestId} has been assigned to staff.");
 
             TempData["Success"] = "Request assigned successfully.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = WorkflowRoles.MaintenanceStaff)]
         public async Task<IActionResult> UpdateStatus(int id, string nextStatus)
         {
@@ -142,12 +190,15 @@ namespace PropertyLeasingSystem.Controllers
 
             request.Status = nextStatus;
             await _context.SaveChangesAsync();
+            await _hub.Clients.Group("MaintenanceBoard").SendAsync("MaintenanceStatusUpdated", request.RequestId, nextStatus);
+            await NotifyTenant(request.TenantId, $"Your maintenance request #{request.RequestId} status updated to: {nextStatus}.");
 
             TempData["Success"] = $"Request status updated to {nextStatus}.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = WorkflowRoles.PropertyManager + "," + WorkflowRoles.Tenant)]
         public async Task<IActionResult> Close(int id)
         {
@@ -172,9 +223,25 @@ namespace PropertyLeasingSystem.Controllers
 
             request.Status = MaintenanceStatuses.Closed;
             await _context.SaveChangesAsync();
+            await NotifyTenant(request.TenantId, $"Your maintenance request #{request.RequestId} has been closed.");
 
             TempData["Success"] = "Request closed successfully.";
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task NotifyTenant(int tenantId, string message)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.TenantId == tenantId);
+            if (user == null) return;
+
+            _context.Notifications.Add(new Notification
+            {
+                UserId = user.Id,
+                Message = message,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
         }
     }
 }

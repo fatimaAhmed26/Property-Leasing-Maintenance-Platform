@@ -1,0 +1,73 @@
+@model IEnumerable<PropertyLeasing.API.Models.Unit>
+@{
+    var property = ViewBag.Property as PropertyLeasing.API.Models.Property;
+    ViewData["Title"] = $"Units - {property?.PropertyName}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2>Units</h2>
+        <p class="text-muted mb-0">@property?.PropertyName &mdash; @property?.Address, @property?.City</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="CreateUnit" asp-route-propertyId="@property?.PropertyId" class="btn btn-primary">+ Add Unit</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to Properties</a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Unit #</th>
+                <th>Size</th>
+                <th>Rent/Month</th>
+                <th>Amenities</th>
+                <th>Available</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td><strong>@u.UnitNumber</strong></td>
+                    <td>@u.Size</td>
+                    <td>@u.RentAmount.ToString("C")</td>
+                    <td>@u.Amenities</td>
+                    <td>
+                        @if (u.IsAvailable)
+                        {
+                            <span class="badge bg-success">Available</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Occupied</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="EditUnit" asp-route-id="@u.UnitId" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <form asp-action="DeleteUnit" method="post" class="d-inline"
+                              onsubmit="return confirm('Delete this unit?')">
+                            <input type="hidden" name="id" value="@u.UnitId" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="6" class="text-center text-muted">No units found.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

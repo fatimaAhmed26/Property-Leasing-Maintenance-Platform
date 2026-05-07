@@ -1,0 +1,85 @@
+@model IEnumerable<PropertyLeasing.API.Models.Application>
+@using PropertyLeasing.API.Services
+@{
+    ViewData["Title"] = "Applications";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Rental Applications</h2>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Tenant</th>
+                <th>Unit</th>
+                <th>Property</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model)
+            {
+                <tr>
+                    <td>#@a.ApplicationId</td>
+                    <td>@a.Tenant?.FullName</td>
+                    <td>@a.Unit?.UnitNumber</td>
+                    <td>@a.Unit?.Property?.PropertyName</td>
+                    <td>@a.SubmittedAt.ToString("MMM d, yyyy")</td>
+                    <td>
+                        @{
+                            var badgeClass = a.Status switch
+                            {
+                                ApplicationStatuses.Submitted => "bg-secondary",
+                                ApplicationStatuses.Pending => "bg-secondary",
+                                ApplicationStatuses.Screening => "bg-info text-dark",
+                                ApplicationStatuses.Approved => "bg-success",
+                                ApplicationStatuses.Rejected => "bg-danger",
+                                ApplicationStatuses.LeaseActive => "bg-primary",
+                                _ => "bg-light text-dark"
+                            };
+                        }
+                        <span class="badge @badgeClass">@a.Status</span>
+                    </td>
+                    <td>
+                        @if (a.Status == ApplicationStatuses.Submitted || a.Status == ApplicationStatuses.Pending)
+                        {
+                            <form asp-controller="LeaseWorkflow" asp-action="MoveToScreening" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@a.ApplicationId" />
+                                <button class="btn btn-sm btn-outline-info">Screen</button>
+                            </form>
+                        }
+                        @if (a.Status == ApplicationStatuses.Screening)
+                        {
+                            <form asp-controller="LeaseWorkflow" asp-action="Approve" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@a.ApplicationId" />
+                                <button class="btn btn-sm btn-success">Approve</button>
+                            </form>
+                            <form asp-controller="LeaseWorkflow" asp-action="Reject" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@a.ApplicationId" />
+                                <button class="btn btn-sm btn-danger">Reject</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="7" class="text-center text-muted">No applications found.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

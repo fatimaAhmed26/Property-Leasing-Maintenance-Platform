@@ -1,0 +1,119 @@
+@page
+@model PropertyLeasing.Reporting.Pages.Reports.OverduePaymentsModel
+@{
+    ViewData["Title"] = "Overdue Payments";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="bi bi-exclamation-triangle text-danger"></i> Overdue Payments
+    </h2>
+    <a asp-page="/Dashboard" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-warning">@Model.ErrorMessage</div>
+}
+
+@if (Model.OverduePayments?.Count > 0)
+{
+    <!-- Summary -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="card border-danger border-opacity-50 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-danger">@Model.OverduePayments.Count</div>
+                    <div class="text-muted small">Overdue Leases</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-danger border-opacity-50 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-danger">
+                        $@Model.OverduePayments.Sum(x => x.AmountDue).ToString("N0")
+                    </div>
+                    <div class="text-muted small">Total Amount Due</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-danger border-opacity-50 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-danger">
+                        @Model.OverduePayments.Max(x => x.DaysOverdue)
+                    </div>
+                    <div class="text-muted small">Max Days Overdue</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 fw-bold">
+            Overdue Payment Details
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tenant</th>
+                            <th>Property</th>
+                            <th>Unit</th>
+                            <th class="text-end">Amount Due</th>
+                            <th>Due Date</th>
+                            <th class="text-center">Days Overdue</th>
+                            <th>Severity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var payment in Model.OverduePayments.OrderByDescending(x => x.DaysOverdue))
+                        {
+                            var (rowClass, severityBadge, severityLabel) = payment.DaysOverdue switch
+                            {
+                                > 60 => ("table-danger", "bg-danger", "Critical"),
+                                > 30 => ("table-warning", "bg-warning text-dark", "High"),
+                                > 14 => ("", "bg-orange text-white", "Medium"),
+                                _ => ("", "bg-secondary", "Low")
+                            };
+                            <tr class="@rowClass">
+                                <td class="fw-semibold">@payment.TenantName</td>
+                                <td class="text-muted">@payment.PropertyName</td>
+                                <td><span class="badge bg-light text-dark border">@payment.UnitNumber</span></td>
+                                <td class="text-end fw-bold text-danger">$@payment.AmountDue.ToString("N2")</td>
+                                <td class="text-muted small">@payment.DueDate.ToString("MMM dd, yyyy")</td>
+                                <td class="text-center">
+                                    <span class="fw-bold @(payment.DaysOverdue > 30 ? "text-danger" : "text-warning")">
+                                        @payment.DaysOverdue days
+                                    </span>
+                                </td>
+                                <td><span class="badge @severityBadge">@severityLabel</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="3">Total</td>
+                            <td class="text-end text-danger">$@Model.OverduePayments.Sum(x => x.AmountDue).ToString("N2")</td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else if (string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-check-circle text-success fs-1"></i>
+            <h4 class="mt-3 text-success">No Overdue Payments</h4>
+            <p class="text-muted">All tenants are up to date with their payments.</p>
+        </div>
+    </div>
+}

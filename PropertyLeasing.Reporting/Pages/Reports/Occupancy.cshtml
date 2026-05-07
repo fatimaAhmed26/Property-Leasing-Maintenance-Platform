@@ -1,0 +1,112 @@
+@page
+@model PropertyLeasing.Reporting.Pages.Reports.OccupancyModel
+@{
+    ViewData["Title"] = "Occupancy Report";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="bi bi-building text-primary"></i> Occupancy Report
+    </h2>
+    <a asp-page="/Dashboard" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-warning">@Model.ErrorMessage</div>
+}
+
+<!-- Summary Cards -->
+@if (Model.Summary != null)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-primary">@Model.Summary.OccupancyRate.ToString("F1")%</div>
+                    <div class="text-muted small">Overall Occupancy Rate</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-dark">@Model.Summary.TotalUnits</div>
+                    <div class="text-muted small">Total Units</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-success">@Model.Summary.OccupiedUnits</div>
+                    <div class="text-muted small">Occupied</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-warning">@Model.Summary.AvailableUnits</div>
+                    <div class="text-muted small">Available</div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Properties Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent border-0 fw-bold">
+        All Properties
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Properties?.Count > 0)
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Property</th>
+                            <th>Address</th>
+                            <th>Type</th>
+                            <th class="text-center">Total Units</th>
+                            <th class="text-center">Occupied</th>
+                            <th class="text-center">Available</th>
+                            <th>Occupancy Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Properties)
+                        {
+                            var rate = p.TotalUnits > 0 ? (p.OccupiedUnits * 100.0 / p.TotalUnits) : 0;
+                            var barClass = rate >= 80 ? "bg-success" : rate >= 50 ? "bg-warning" : "bg-danger";
+                            <tr>
+                                <td class="fw-semibold">@p.Name</td>
+                                <td class="text-muted small">@p.Address</td>
+                                <td><span class="badge bg-light text-dark border">@p.PropertyType</span></td>
+                                <td class="text-center">@p.TotalUnits</td>
+                                <td class="text-center text-success fw-semibold">@p.OccupiedUnits</td>
+                                <td class="text-center text-warning fw-semibold">@p.AvailableUnits</td>
+                                <td style="min-width:140px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress flex-grow-1" style="height:8px;">
+                                            <div class="progress-bar @barClass" style="width:@rate.ToString("F0")%"></div>
+                                        </div>
+                                        <span class="small fw-semibold" style="min-width:42px;">@rate.ToString("F0")%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="p-4 text-muted text-center">No property data available.</div>
+        }
+    </div>
+</div>
