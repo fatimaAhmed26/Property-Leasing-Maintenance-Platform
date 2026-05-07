@@ -1,0 +1,125 @@
+@model IEnumerable<PropertyLeasing.API.Models.MaintenanceRequest>
+@using PropertyLeasing.API.Services
+@using PropertyLeasing.API.Models
+@{
+    ViewData["Title"] = "Maintenance Requests";
+    var staffList = ViewBag.StaffList as List<Staff> ?? new List<Staff>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Maintenance Requests</h2>
+    @if (User.IsInRole(WorkflowRoles.Tenant))
+    {
+        <a asp-action="Submit" class="btn btn-primary">Submit Request</a>
+    }
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Ticket #</th>
+                <th>Tenant</th>
+                <th>Unit</th>
+                <th>Description</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Reported</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model)
+            {
+                <tr>
+                    <td>#@r.RequestId</td>
+                    <td>@r.Tenant?.FullName</td>
+                    <td>@r.Unit?.UnitNumber</td>
+                    <td>@r.Description</td>
+                    <td>
+                        @{
+                            var priorityClass = r.Priority switch
+                            {
+                                "High" => "bg-danger",
+                                "Medium" => "bg-warning text-dark",
+                                _ => "bg-secondary"
+                            };
+                        }
+                        <span class="badge @priorityClass">@r.Priority</span>
+                    </td>
+                    <td>
+                        @{
+                            var statusClass = r.Status switch
+                            {
+                                MaintenanceStatuses.Submitted => "bg-secondary",
+                                MaintenanceStatuses.Assigned => "bg-info text-dark",
+                                MaintenanceStatuses.InProgress => "bg-warning text-dark",
+                                MaintenanceStatuses.Resolved => "bg-success",
+                                MaintenanceStatuses.Closed => "bg-dark",
+                                _ => "bg-light text-dark"
+                            };
+                        }
+                        <span class="badge @statusClass">@r.Status</span>
+                    </td>
+                    <td>@r.ReportedAt.ToString("MMM d, yyyy")</td>
+                    <td>
+                        @if (User.IsInRole(WorkflowRoles.PropertyManager) && r.Status == MaintenanceStatuses.Submitted)
+                        {
+                            <form asp-action="Assign" method="post" class="d-inline d-flex gap-1 align-items-center">
+                                <input type="hidden" name="id" value="@r.RequestId" />
+                                <select name="staffId" class="form-select form-select-sm" style="width:auto;" required>
+                                    <option value="">Select staff</option>
+                                    @foreach (var s in staffList)
+                                    {
+                                        <option value="@s.StaffId">@s.FullName (@s.SkillType)</option>
+                                    }
+                                </select>
+                                <button class="btn btn-sm btn-outline-info">Assign</button>
+                            </form>
+                        }
+                        @if (User.IsInRole(WorkflowRoles.MaintenanceStaff))
+                        {
+                            @if (r.Status == MaintenanceStatuses.Assigned)
+                            {
+                                <form asp-action="UpdateStatus" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@r.RequestId" />
+                                    <input type="hidden" name="nextStatus" value="@MaintenanceStatuses.InProgress" />
+                                    <button class="btn btn-sm btn-warning">Start</button>
+                                </form>
+                            }
+                            @if (r.Status == MaintenanceStatuses.InProgress)
+                            {
+                                <form asp-action="UpdateStatus" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@r.RequestId" />
+                                    <input type="hidden" name="nextStatus" value="@MaintenanceStatuses.Resolved" />
+                                    <button class="btn btn-sm btn-success">Resolve</button>
+                                </form>
+                            }
+                        }
+                        @if ((User.IsInRole(WorkflowRoles.PropertyManager) || User.IsInRole(WorkflowRoles.Tenant))
+                             && r.Status == MaintenanceStatuses.Resolved)
+                        {
+                            <form asp-action="Close" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@r.RequestId" />
+                                <button class="btn btn-sm btn-dark">Close</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="8" class="text-center text-muted">No maintenance requests found.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

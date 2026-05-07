@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Submit Application";
+    var units = ViewBag.AvailableUnits as List<PropertyLeasing.API.Models.Unit> ?? new List<PropertyLeasing.API.Models.Unit>();
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <h2 class="mb-3">Apply for a Unit</h2>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        @if (units.Any())
+        {
+            <form asp-action="Submit" method="post">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Select an Available Unit</label>
+                    <div class="row">
+                        @foreach (var u in units)
+                        {
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="unitId"
+                                                   id="unit_@u.UnitId" value="@u.UnitId" required />
+                                            <label class="form-check-label" for="unit_@u.UnitId">
+                                                <strong>Unit @u.UnitNumber</strong><br />
+                                                <small class="text-muted">@u.Property?.PropertyName</small><br />
+                                                @u.RentAmount.ToString("C") / month<br />
+                                                <small>@u.Size &mdash; @u.Amenities</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        }
+        else
+        {
+            <div class="alert alert-info">No units are currently available for application.</div>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Back to Home</a>
+        }
+    </div>
+</div>

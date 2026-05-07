@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropertyLeasing.API.Data;
-using PropertyLeasingSystem.Services;
+using PropertyLeasing.API.Models;
+using PropertyLeasing.API.Services;
 using System.Security.Claims;
 
 namespace PropertyLeasingSystem.Controllers
@@ -12,13 +14,16 @@ namespace PropertyLeasingSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILeaseLifecycleService _leaseLifecycleService;
+        private readonly UserManager<AppUser> _userManager;
 
         public LeaseWorkflowController(
             ApplicationDbContext context,
-            ILeaseLifecycleService leaseLifecycleService)
+            ILeaseLifecycleService leaseLifecycleService,
+            UserManager<AppUser> userManager)
         {
             _context = context;
             _leaseLifecycleService = leaseLifecycleService;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Index()
@@ -26,12 +31,15 @@ namespace PropertyLeasingSystem.Controllers
             var applications = await _context.Applications
                 .Include(a => a.Tenant)
                 .Include(a => a.Unit)
+                    .ThenInclude(u => u!.Property)
+                .OrderByDescending(a => a.SubmittedAt)
                 .ToListAsync();
 
             return View(applications);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> MoveToScreening(int id)
         {
             var application = await _context.Applications.FirstOrDefaultAsync(a => a.ApplicationId == id);
@@ -52,12 +60,14 @@ namespace PropertyLeasingSystem.Controllers
 
             application.Status = ApplicationStatuses.Screening;
             await _context.SaveChangesAsync();
+            await NotifyTenant(application.TenantId, $"Your application #{application.ApplicationId} has moved to screening.");
 
             TempData["Success"] = "Application moved to screening.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(int id)
         {
             var application = await _context.Applications.FirstOrDefaultAsync(a => a.ApplicationId == id);
@@ -79,12 +89,14 @@ namespace PropertyLeasingSystem.Controllers
             application.Status = ApplicationStatuses.Approved;
             application.ProcessedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+            await NotifyTenant(application.TenantId, $"Your application #{application.ApplicationId} has been approved!");
 
             TempData["Success"] = "Application approved.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(int id)
         {
             var application = await _context.Applications.FirstOrDefaultAsync(a => a.ApplicationId == id);
@@ -106,12 +118,14 @@ namespace PropertyLeasingSystem.Controllers
             application.Status = ApplicationStatuses.Rejected;
             application.ProcessedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+            await NotifyTenant(application.TenantId, $"Your application #{application.ApplicationId} has been rejected.");
 
             TempData["Success"] = "Application rejected.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Activate(int id, DateTime startDate, DateTime endDate)
         {
             var application = await _context.Applications
@@ -144,7 +158,7 @@ namespace PropertyLeasingSystem.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var lease = new PropertyLeasing.API.Models.Lease
+            var lease = new Lease
             {
                 ApplicationId = application.ApplicationId,
                 UnitId = application.UnitId,
@@ -162,9 +176,28 @@ namespace PropertyLeasingSystem.Controllers
             application.Unit.IsAvailable = false;
 
             await _context.SaveChangesAsync();
+            await NotifyTenant(application.TenantId, $"Your lease for unit {application.Unit.UnitNumber} has been activated.");
 
             TempData["Success"] = "Lease activated successfully.";
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task NotifyTenant(int tenantId, string message)
+        {
+            var tenant = await _context.Tenants.FindAsync(tenantId);
+            if (tenant == null) return;
+
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.TenantId == tenantId);
+            if (user == null) return;
+
+            _context.Notifications.Add(new Notification
+            {
+                UserId = user.Id,
+                Message = message,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
         }
     }
 }

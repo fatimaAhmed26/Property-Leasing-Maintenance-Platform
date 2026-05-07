@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropertyLeasing.API.Data;
 using PropertyLeasing.API.Models;
-using PropertyLeasingSystem.Services;
+using PropertyLeasing.API.Services;
 using System.Security.Claims;
 
 namespace PropertyLeasingSystem.Controllers

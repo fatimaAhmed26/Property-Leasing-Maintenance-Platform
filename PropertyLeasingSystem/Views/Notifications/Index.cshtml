@@ -1,0 +1,64 @@
+@model IEnumerable<PropertyLeasing.API.Models.Notification>
+@{
+    ViewData["Title"] = "Notifications";
+    var unreadCount = Model.Count(n => !n.IsRead);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Notifications</h2>
+        @if (unreadCount > 0)
+        {
+            <span class="badge bg-danger">@unreadCount unread</span>
+        }
+    </div>
+    @if (unreadCount > 0)
+    {
+        <form asp-action="MarkAllRead" method="post">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-outline-secondary btn-sm">Mark all as read</button>
+        </form>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5 text-muted">
+        <div class="fs-1 mb-2">&#128276;</div>
+        <p>You have no notifications.</p>
+    </div>
+}
+else
+{
+    <div class="list-group shadow-sm">
+        @foreach (var n in Model)
+        {
+            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-start @(!n.IsRead ? "list-group-item-light fw-semibold" : "")">
+                <div class="d-flex gap-3 align-items-start">
+                    <span class="mt-1" style="font-size:1.2rem;">
+                        @if (!n.IsRead)
+                        {
+                            <span class="text-primary">&#9679;</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">&#9675;</span>
+                        }
+                    </span>
+                    <div>
+                        <div>@n.Message</div>
+                        <small class="text-muted fw-normal">@n.CreatedAt.ToString("dd MMM yyyy, HH:mm")</small>
+                    </div>
+                </div>
+                @if (!n.IsRead)
+                {
+                    <form asp-action="MarkRead" method="post" class="ms-3 flex-shrink-0">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@n.NotificationId" />
+                        <button class="btn btn-sm btn-outline-primary">Mark read</button>
+                    </form>
+                }
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,89 @@
+@model PropertyLeasing.API.Models.AppUser
+@using PropertyLeasing.API.Models
+@{
+    ViewData["Title"] = "My Profile";
+    var tenant = ViewBag.Tenant as Tenant;
+}
+
+<div class="container py-4" style="max-width:600px;">
+    <h2 class="mb-4">My Profile</h2>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">&#128100; Account Details</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Full Name</dt>
+                <dd class="col-sm-8">@Model.FullName</dd>
+
+                <dt class="col-sm-4">Email</dt>
+                <dd class="col-sm-8">@Model.Email</dd>
+
+                <dt class="col-sm-4">Role</dt>
+                <dd class="col-sm-8">
+                    @{
+                        var roles = ViewContext.HttpContext.User;
+                        string role = roles.IsInRole("Property Manager") ? "Property Manager"
+                                    : roles.IsInRole("Maintenance Staff") ? "Maintenance Staff"
+                                    : "Tenant";
+                    }
+                    <span class="badge bg-secondary">@role</span>
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    @if (tenant != null)
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">&#128222; Tenant Details</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Tenant ID</dt>
+                    <dd class="col-sm-8">#@tenant.TenantId</dd>
+                </dl>
+
+                <label class="form-label fw-semibold">Registered Phone Number</label>
+                <p class="text-muted small mb-2">This is the number used to look up your maintenance requests on the public tracking page.</p>
+
+                <div id="phoneDisplay" class="d-flex align-items-center gap-3">
+                    <span class="fw-semibold fs-5">@tenant.Phone</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleEdit()">Edit</button>
+                </div>
+
+                <form id="phoneForm" asp-action="UpdatePhone" method="post" class="d-none mt-2">
+                    @Html.AntiForgeryToken()
+                    <div class="d-flex gap-2">
+                        <input type="text" name="phone" value="@tenant.Phone" class="form-control" placeholder="e.g. 33334444" required />
+                        <button type="submit" class="btn btn-success text-nowrap">Save</button>
+                        <button type="button" class="btn btn-outline-secondary text-nowrap" onclick="toggleEdit()">Cancel</button>
+                    </div>
+                </form>
+
+                <script>
+                    function toggleEdit() {
+                        document.getElementById('phoneDisplay').classList.toggle('d-none');
+                        document.getElementById('phoneForm').classList.toggle('d-none');
+                    }
+                </script>
+
+                <hr />
+                <a asp-controller="PublicLookup" asp-action="MaintenanceLookup" class="btn btn-outline-primary btn-sm">
+                    &#128269; Track a Maintenance Request
+                </a>
+            </div>
+        </div>
+    }
+</div>
