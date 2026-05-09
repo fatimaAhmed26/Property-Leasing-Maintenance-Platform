@@ -13,6 +13,11 @@ namespace PropertyLeasingSystem.Models
         public string Email { get; set; } = string.Empty;
 
         [Required]
+        [Display(Name = "Phone Number")]
+        [RegularExpression(@"^\d{7,15}$", ErrorMessage = "Enter a valid phone number (digits only).")]
+        public string Phone { get; set; } = string.Empty;
+
+        [Required]
         [DataType(DataType.Password)]
         [MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
         public string Password { get; set; } = string.Empty;

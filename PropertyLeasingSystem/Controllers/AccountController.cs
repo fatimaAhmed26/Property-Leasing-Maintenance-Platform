@@ -85,6 +85,20 @@ namespace PropertyLeasingSystem.Controllers
                     await _roleManager.CreateAsync(new IdentityRole(defaultRole));
 
                 await _userManager.AddToRoleAsync(user, defaultRole);
+
+                // Create a tenant record linked to this user
+                var tenant = new PropertyLeasing.API.Models.Tenant
+                {
+                    FullName = model.FullName,
+                    Email    = model.Email,
+                    Phone    = model.Phone
+                };
+                _context.Tenants.Add(tenant);
+                await _context.SaveChangesAsync();
+
+                user.TenantId = tenant.TenantId;
+                await _userManager.UpdateAsync(user);
+
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");
             }
