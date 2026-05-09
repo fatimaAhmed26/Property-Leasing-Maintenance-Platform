@@ -7,160 +7,148 @@
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/PropertyLeasingSystem.styles.css" asp-append-version="true" />
-    <style>
-        .navbar-brand { font-weight: 700; }
-        .nav-link.active { font-weight: 600; }
-        .notification-bell { position: relative; }
-        .notification-badge {
-            position: absolute;
-            top: -4px;
-            right: -6px;
-            font-size: 0.65rem;
-            padding: 2px 5px;
-        }
-    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-md navbar-dark bg-dark border-bottom shadow-sm mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    &#127968; Property Leasing
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
-                        aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse" id="navbarMain">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
 
-                        @if (User.IsInRole("Property Manager"))
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Properties</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="Properties" asp-action="Index">All Properties</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Properties" asp-action="Create">Add Property</a></li>
-                                    <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" asp-controller="Tenants" asp-action="Index">Tenants</a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Leases</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="LeaseWorkflow" asp-action="Index">Lease Workflow</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Applications" asp-action="Index">Applications</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Payments" asp-action="Index">Payments</a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Maintenance</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="MaintenanceWorkflow" asp-action="Index">All Requests</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Maintenance" asp-action="Board">Live Board</a></li>
-                                </ul>
-                            </li>
-                        }
+<nav class="apple-nav">
+    <div class="d-flex align-items-center w-100">
+        <a class="navbar-brand me-4" asp-controller="Home" asp-action="Index">&#127968; Property Leasing</a>
 
-                        @if (User.IsInRole("Tenant"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Applications" asp-action="Submit">Apply for Unit</a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Maintenance</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="MaintenanceWorkflow" asp-action="Submit">Submit Request</a></li>
-                                    <li><a class="dropdown-item" asp-controller="MaintenanceWorkflow" asp-action="Index">My Requests</a></li>
-                                </ul>
-                            </li>
-                        }
+        <button class="navbar-toggler d-md-none border-0 ms-auto" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                style="filter:invert(1)">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-                        @if (User.IsInRole("Maintenance Staff"))
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Maintenance</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="MaintenanceWorkflow" asp-action="Index">Work Orders</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Maintenance" asp-action="Board">Live Board</a></li>
-                                </ul>
-                            </li>
-                        }
+        <div class="collapse navbar-collapse d-md-flex align-items-center" id="navbarMain">
+            <ul class="navbar-nav me-auto d-flex flex-row align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="PublicLookup" asp-action="MaintenanceLookup">Track Request</a>
-                        </li>
-                    </ul>
+                @if (User.IsInRole("Property Manager"))
+                {
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Properties</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" asp-controller="Properties" asp-action="Index">All Properties</a></li>
+                            <li><a class="dropdown-item" asp-controller="Properties" asp-action="Create">Add Property</a></li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li><a class="dropdown-item" asp-controller="Tenants" asp-action="Index">Tenants</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Leases</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" asp-controller="LeaseWorkflow" asp-action="Index">Lease Workflow</a></li>
+                            <li><a class="dropdown-item" asp-controller="Applications" asp-action="Index">Applications</a></li>
+                            <li><a class="dropdown-item" asp-controller="Payments" asp-action="Index">Payments</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Maintenance</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" asp-controller="MaintenanceWorkflow" asp-action="Index">All Requests</a></li>
+                            <li><a class="dropdown-item" asp-controller="Maintenance" asp-action="Board">Live Board</a></li>
+                        </ul>
+                    </li>
+                }
 
-                    <ul class="navbar-nav ms-auto align-items-center">
-                        @if (User.Identity?.IsAuthenticated ?? false)
-                        {
-                            <!-- Notification Bell -->
-                            <li class="nav-item me-2">
-                                <a class="nav-link notification-bell" asp-controller="Notifications" asp-action="Index"
-                                   title="Notifications">
-                                    &#128276;
-                                    @{
-                                        // Unread count injected via ViewBag from a partial or filter
-                                        var unread = ViewBag.UnreadNotificationCount as int?;
-                                    }
-                                    @if (unread.HasValue && unread.Value > 0)
-                                    {
-                                        <span class="badge bg-danger notification-badge">@unread</span>
-                                    }
-                                </a>
-                            </li>
+                @if (User.IsInRole("Tenant"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Applications" asp-action="Submit">Apply for Unit</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Maintenance</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" asp-controller="MaintenanceWorkflow" asp-action="Submit">Submit Request</a></li>
+                            <li><a class="dropdown-item" asp-controller="MaintenanceWorkflow" asp-action="Index">My Requests</a></li>
+                        </ul>
+                    </li>
+                }
 
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                    &#128100; @User.Identity.Name
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">My Profile</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Notifications" asp-action="Index">Notifications</a></li>
-                                    <li><hr class="dropdown-divider" /></li>
-                                    <li>
-                                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                            <button type="submit" class="dropdown-item text-danger">Sign Out</button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Login">Sign In</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-outline-light btn-sm ms-2" asp-controller="Account" asp-action="Register">Register</a>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
+                @if (User.IsInRole("Maintenance Staff"))
+                {
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Maintenance</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" asp-controller="MaintenanceWorkflow" asp-action="Index">Work Orders</a></li>
+                            <li><a class="dropdown-item" asp-controller="Maintenance" asp-action="Board">Live Board</a></li>
+                        </ul>
+                    </li>
+                }
 
-    <div class="container-fluid px-4">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="PublicLookup" asp-action="MaintenanceLookup">Track Request</a>
+                </li>
+            </ul>
 
-    <footer class="border-top footer text-muted mt-4">
-        <div class="container">
-            &copy; 2026 - Property Leasing &amp; Maintenance Platform
+            <ul class="navbar-nav ms-auto d-flex flex-row align-items-center gap-2">
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link notification-bell" asp-controller="Notifications" asp-action="Index" title="Notifications">
+                            &#128276;
+                            @{
+                                var unread = ViewBag.UnreadNotificationCount as int?;
+                            }
+                            @if (unread.HasValue && unread.Value > 0)
+                            {
+                                <span class="badge bg-danger notification-badge">@unread</span>
+                            }
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown">
+                            <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.15);font-size:.8rem;">
+                                @(User.Identity.Name?[0].ToString().ToUpper())
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li class="px-3 py-2" style="color:rgba(245,245,247,.5);font-size:.78rem;">@User.Identity.Name</li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">My Profile</a></li>
+                            <li><a class="dropdown-item" asp-controller="Notifications" asp-action="Index">Notifications</a></li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <form asp-controller="Account" asp-action="Logout" method="post">
+                                    <button type="submit" class="dropdown-item" style="color:#ff453a;">Sign Out</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Account" asp-action="Login">Sign In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-controller="Account" asp-action="Register"
+                           style="background:var(--apple-blue);color:#fff;border-radius:980px;padding:6px 16px;font-size:.85rem;font-weight:500;text-decoration:none;transition:var(--transition);">
+                            Register
+                        </a>
+                    </li>
+                }
+            </ul>
         </div>
-    </footer>
+    </div>
+</nav>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+<div class="page-wrapper">
+    <main role="main">
+        @RenderBody()
+    </main>
+</div>
+
+<footer class="apple-footer">
+    &copy; 2026 Property Leasing &amp; Maintenance Platform
+</footer>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

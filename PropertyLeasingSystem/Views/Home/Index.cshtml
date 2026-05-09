@@ -3,163 +3,147 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Dashboard</h2>
-    @if (User.Identity?.IsAuthenticated ?? false)
-    {
-        <span class="text-muted">Welcome, <strong>@User.Identity.Name</strong></span>
-    }
-</div>B
+    <div>
+        <h2>Dashboard</h2>
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <p style="color:var(--apple-gray);font-size:.9rem;margin-top:2px;margin-bottom:0;">
+                Welcome back, <strong>@User.Identity.Name</strong>
+            </p>
+        }
+    </div>
+</div>
 
 <!-- Stats Row -->
-<div class="row g-3 mb-4">
-    <div class="col-sm-6 col-md-4 col-xl">
-        <div class="card text-center shadow-sm border-0 bg-primary text-white">
-            <div class="card-body">
-                <h3 class="fw-bold">@ViewBag.AvailableUnits</h3>
-                <p class="mb-0 small">Available Units</p>
-            </div>
+<div class="row g-3 mb-5">
+    <div class="col-6 col-md-4 col-xl">
+        <div class="stat-card">
+            <div class="stat-number" style="color:#0071e3;">@ViewBag.AvailableUnits</div>
+            <div class="stat-label">Available Units</div>
         </div>
     </div>
-    <div class="col-sm-6 col-md-4 col-xl">
-        <div class="card text-center shadow-sm border-0 bg-success text-white">
-            <div class="card-body">
-                <h3 class="fw-bold">@ViewBag.ActiveLeases</h3>
-                <p class="mb-0 small">Active Leases</p>
-            </div>
+    <div class="col-6 col-md-4 col-xl">
+        <div class="stat-card">
+            <div class="stat-number" style="color:#30d158;">@ViewBag.ActiveLeases</div>
+            <div class="stat-label">Active Leases</div>
         </div>
     </div>
-    <div class="col-sm-6 col-md-4 col-xl">
-        <div class="card text-center shadow-sm border-0 bg-warning text-dark">
-            <div class="card-body">
-                <h3 class="fw-bold">@ViewBag.OpenMaintenance</h3>
-                <p class="mb-0 small">Open Maintenance</p>
-            </div>
+    <div class="col-6 col-md-4 col-xl">
+        <div class="stat-card">
+            <div class="stat-number" style="color:#ff9f0a;">@ViewBag.OpenMaintenance</div>
+            <div class="stat-label">Open Maintenance</div>
         </div>
     </div>
-    <div class="col-sm-6 col-md-4 col-xl">
-        <div class="card text-center shadow-sm border-0 bg-info text-white">
-            <div class="card-body">
-                <h3 class="fw-bold">@ViewBag.TotalProperties</h3>
-                <p class="mb-0 small">Properties</p>
-            </div>
+    <div class="col-6 col-md-4 col-xl">
+        <div class="stat-card">
+            <div class="stat-number" style="color:#5e5ce6;">@ViewBag.TotalProperties</div>
+            <div class="stat-label">Properties</div>
         </div>
     </div>
-    <div class="col-sm-6 col-md-4 col-xl">
-        <div class="card text-center shadow-sm border-0 bg-secondary text-white">
-            <div class="card-body">
-                <h3 class="fw-bold">@ViewBag.PendingApplications</h3>
-                <p class="mb-0 small">Pending Applications</p>
-            </div>
+    <div class="col-6 col-md-4 col-xl">
+        <div class="stat-card">
+            <div class="stat-number" style="color:#ff375f;">@ViewBag.PendingApplications</div>
+            <div class="stat-label">Pending Applications</div>
         </div>
     </div>
 </div>
 
-<!-- Role-based Quick Actions -->
+<!-- Quick Actions -->
 @if (User.Identity?.IsAuthenticated ?? false)
 {
-    <h5 class="mb-3">Quick Actions</h5>
+    <h5 class="mb-3" style="color:var(--apple-gray);font-weight:500;font-size:.82rem;letter-spacing:.5px;text-transform:uppercase;">Quick Actions</h5>
     <div class="row g-3">
         @if (User.IsInRole("Property Manager"))
         {
-            <div class="col-md-3">
-                <a asp-controller="Properties" asp-action="Index" class="card text-decoration-none text-dark shadow-sm h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-2 mb-2">&#127970;</div>
-                        <strong>Manage Properties</strong>
-                    </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="Properties" asp-action="Index" class="action-card">
+                    <div class="action-icon">&#127970;</div>
+                    <strong>Properties</strong>
                 </a>
             </div>
-            <div class="col-md-3">
-                <a asp-controller="LeaseWorkflow" asp-action="Index" class="card text-decoration-none text-dark shadow-sm h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-2 mb-2">&#128203;</div>
-                        <strong>Lease Workflow</strong>
-                    </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="LeaseWorkflow" asp-action="Index" class="action-card">
+                    <div class="action-icon">&#128203;</div>
+                    <strong>Lease Workflow</strong>
                 </a>
             </div>
-            <div class="col-md-3">
-                <a asp-controller="Payments" asp-action="Index" class="card text-decoration-none text-dark shadow-sm h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-2 mb-2">&#128176;</div>
-                        <strong>Payments</strong>
-                    </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="Payments" asp-action="Index" class="action-card">
+                    <div class="action-icon">&#128176;</div>
+                    <strong>Payments</strong>
                 </a>
             </div>
-            <div class="col-md-3">
-                <a asp-controller="Tenants" asp-action="Index" class="card text-decoration-none text-dark shadow-sm h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-2 mb-2">&#128101;</div>
-                        <strong>Tenants</strong>
-                    </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="Tenants" asp-action="Index" class="action-card">
+                    <div class="action-icon">&#128101;</div>
+                    <strong>Tenants</strong>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="MaintenanceWorkflow" asp-action="Index" class="action-card">
+                    <div class="action-icon">&#128295;</div>
+                    <strong>Maintenance</strong>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="Maintenance" asp-action="Board" class="action-card">
+                    <div class="action-icon">&#128225;</div>
+                    <strong>Live Board</strong>
                 </a>
             </div>
         }
 
         @if (User.IsInRole("Tenant"))
         {
-            <div class="col-md-3">
-                <a asp-controller="Applications" asp-action="Submit" class="card text-decoration-none text-dark shadow-sm h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-2 mb-2">&#128221;</div>
-                        <strong>Apply for Unit</strong>
-                    </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="Applications" asp-action="Submit" class="action-card">
+                    <div class="action-icon">&#128221;</div>
+                    <strong>Apply for Unit</strong>
                 </a>
             </div>
-            <div class="col-md-3">
-                <a asp-controller="MaintenanceWorkflow" asp-action="Submit" class="card text-decoration-none text-dark shadow-sm h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-2 mb-2">&#128295;</div>
-                        <strong>Submit Maintenance</strong>
-                    </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="MaintenanceWorkflow" asp-action="Submit" class="action-card">
+                    <div class="action-icon">&#128295;</div>
+                    <strong>Submit Request</strong>
                 </a>
             </div>
-            <div class="col-md-3">
-                <a asp-controller="MaintenanceWorkflow" asp-action="Index" class="card text-decoration-none text-dark shadow-sm h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-2 mb-2">&#128202;</div>
-                        <strong>My Requests</strong>
-                    </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="MaintenanceWorkflow" asp-action="Index" class="action-card">
+                    <div class="action-icon">&#128202;</div>
+                    <strong>My Requests</strong>
                 </a>
             </div>
         }
 
         @if (User.IsInRole("Maintenance Staff"))
         {
-            <div class="col-md-3">
-                <a asp-controller="MaintenanceWorkflow" asp-action="Index" class="card text-decoration-none text-dark shadow-sm h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-2 mb-2">&#128295;</div>
-                        <strong>My Work Orders</strong>
-                    </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="MaintenanceWorkflow" asp-action="Index" class="action-card">
+                    <div class="action-icon">&#128295;</div>
+                    <strong>My Work Orders</strong>
                 </a>
             </div>
-            <div class="col-md-3">
-                <a asp-controller="Maintenance" asp-action="Board" class="card text-decoration-none text-dark shadow-sm h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-2 mb-2">&#128225;</div>
-                        <strong>Live Board</strong>
-                    </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="Maintenance" asp-action="Board" class="action-card">
+                    <div class="action-icon">&#128225;</div>
+                    <strong>Live Board</strong>
                 </a>
             </div>
         }
 
-        <div class="col-md-3">
-            <a asp-controller="PublicLookup" asp-action="MaintenanceLookup" class="card text-decoration-none text-dark shadow-sm h-100">
-                <div class="card-body text-center py-4">
-                    <div class="fs-2 mb-2">&#128269;</div>
-                    <strong>Track Request</strong>
-                </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="PublicLookup" asp-action="MaintenanceLookup" class="action-card">
+                <div class="action-icon">&#128269;</div>
+                <strong>Track Request</strong>
             </a>
         </div>
     </div>
 }
 else
 {
-    <div class="row justify-content-center mt-4">
-        <div class="col-md-6 text-center">
-            <p class="lead text-muted mb-4">Please sign in to access the platform.</p>
-            <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg me-2">Sign In</a>
-            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-secondary btn-lg">Register</a>
-        </div>
+    <div class="text-center py-5">
+        <p style="font-size:1.1rem;color:var(--apple-gray);margin-bottom:28px;">Sign in to access the platform.</p>
+        <a asp-controller="Account" asp-action="Login" class="btn-apple me-3 text-decoration-none">Sign In</a>
+        <a asp-controller="Account" asp-action="Register" class="btn-apple-outline text-decoration-none">Register</a>
     </div>
 }

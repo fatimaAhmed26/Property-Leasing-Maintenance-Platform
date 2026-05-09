@@ -1,18 +1,19 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PropertyLeasing.API.Data;
 using PropertyLeasing.API.DTOs;
-using System.Text.Json;
 
 namespace PropertyLeasingSystem.Controllers
 {
     [AllowAnonymous]
     public class PublicLookupController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ApplicationDbContext _context;
 
-        public PublicLookupController(IHttpClientFactory httpClientFactory)
+        public PublicLookupController(ApplicationDbContext context)
         {
-            _httpClientFactory = httpClientFactory;
+            _context = context;
         }
 
         [HttpGet]
@@ -36,29 +37,31 @@ namespace PropertyLeasingSystem.Controllers
                 return View();
             }
 
-            var client = _httpClientFactory.CreateClient("MaintenanceAPI");
+            var request = await _context.MaintenanceRequests
+                .Include(r => r.Tenant)
+                .Include(r => r.MaintenanceLogs)
+                .FirstOrDefaultAsync(r => r.RequestId == ticketId && r.Tenant!.Phone == phoneNumber.Trim());
 
-            var response = await client.GetAsync(
-                $"api/maintenance/lookup?ticketId={ticketId}&phone={Uri.EscapeDataString(phoneNumber)}");
-
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound ||
-                response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            if (request == null)
             {
                 TempData["Error"] = "No maintenance request found with those details.";
                 return View();
             }
 
-            if (!response.IsSuccessStatusCode)
+            var result = new MaintenanceLookupResultDto
             {
-                TempData["Error"] = "Unable to retrieve request details. Please try again later.";
-                return View();
-            }
-
-            var json = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<MaintenanceLookupResultDto>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+                Status      = request.Status,
+                Description = request.Description,
+                Priority    = request.Priority,
+                ReportedAt  = request.ReportedAt,
+                TenantName  = request.Tenant!.FullName,
+                Logs        = request.MaintenanceLogs?.Select(l => new MaintenanceLogDto
+                {
+                    ActionTaken   = l.ActionTaken,
+                    WorkStarted   = l.WorkStarted,
+                    WorkCompleted = l.WorkCompleted
+                }).ToList() ?? []
+            };
 
             return View("MaintenanceLookupResult", result);
         }
