@@ -102,11 +102,13 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown">
                             <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.15);font-size:.8rem;">
-                                @(User.Identity.Name?[0].ToString().ToUpper())
+                                @(ViewBag.CurrentUserName != null ? ViewBag.CurrentUserName.ToString()[0].ToString().ToUpper() : User.Identity?.Name?[0].ToString().ToUpper())
                             </span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li class="px-3 py-2" style="color:rgba(245,245,247,.5);font-size:.78rem;">@User.Identity.Name</li>
+                            <li class="px-3 py-2" style="color:rgba(245,245,247,.5);font-size:.78rem;">
+                                @(ViewBag.CurrentUserName ?? User.Identity?.Name)
+                            </li>
                             <li><hr class="dropdown-divider" /></li>
                             <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">My Profile</a></li>
                             <li><a class="dropdown-item" asp-controller="Notifications" asp-action="Index">Notifications</a></li>

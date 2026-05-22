@@ -20,12 +20,21 @@ namespace PropertyLeasingSystem.Filters
             if (context.Controller is Controller controller &&
                 context.HttpContext.User.Identity?.IsAuthenticated == true)
             {
-                var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = context.HttpContext.User
+                    .FindFirstValue(ClaimTypes.NameIdentifier);
+
                 if (!string.IsNullOrEmpty(userId))
                 {
+                    // Unread notification count
                     var count = await _context.Notifications
                         .CountAsync(n => n.UserId == userId && !n.IsRead);
                     controller.ViewBag.UnreadNotificationCount = count;
+
+                    // Get full name from database
+                    var user = await _context.Users
+                        .FirstOrDefaultAsync(u => u.Id == userId);
+                    if (user != null)
+                        controller.ViewBag.CurrentUserName = user.FullName;
                 }
             }
 
