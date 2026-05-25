@@ -20,41 +20,88 @@
         @if (User.Identity?.IsAuthenticated ?? false)
         {
             <p style="color:var(--apple-gray);font-size:.9rem;margin-top:2px;margin-bottom:0;">
-                Welcome back, <strong>@User.Identity.Name</strong>
+                Welcome back, <strong>@(ViewBag.CurrentUserName)</strong>
             </p>
         }
     </div>
+</div>
+
+<div class="row align-items-center py-5 mb-5">
+    <div class="col-lg-6">
+        @if (User.IsInRole("Tenant"))
+        {
+            <h1 class="fw-bold mb-3" style="font-size: 3.2rem; letter-spacing: -1.5px;">
+                Your Home, <br /><span class="text-blue">Simplified.</span>
+            </h1>
+            <p class="lead text-muted mb-4" style="max-width: 450px;">
+                Manage your residency, track your maintenance requests, and stay updated with your property status effortlessly.
+            </p>
+            <div class="d-flex gap-3">
+                <a asp-controller="Applications" asp-action="Submit" class="btn-apple text-decoration-none px-4">Submit Application</a>
+            </div>
+        }
+        @if (User.IsInRole("Property Manager"))
+        {
+            <h1 class="fw-bold mb-3" style="font-size: 3.2rem; letter-spacing: -1.5px;">
+                Manage Your <br /><span class="text-blue">Property Portfolio</span>
+            </h1>
+            <p class="lead text-muted mb-4" style="max-width: 450px;">
+                Streamline leasing, oversee maintenance workflows, and manage tenant relationships from one intuitive hub.
+            </p>
+            <div class="d-flex gap-3">
+                <a asp-controller="Properties" asp-action="Index" class="btn-apple text-decoration-none px-4">View Properties</a>
+                <a asp-controller="Tenants" asp-action="Index" class="btn-apple-secondary text-decoration-none px-4">Tenants</a>
+            </div>
+        }
+        @if (User.IsInRole("Maintenance Staff"))
+        {
+            <h1 class="fw-bold mb-3" style="font-size: 3.2rem; letter-spacing: -1.5px;">
+                Ready for <br /><span class="text-blue">the Job?</span>
+            </h1>
+            <p class="lead text-muted mb-4" style="max-width: 450px;">
+                Access your assigned work orders, update ticket statuses in real-time, and keep the property in perfect condition.
+            </p>
+            <div class="d-flex gap-3">
+                <a asp-controller="MaintenanceWorkflow" asp-action="Index" class="btn-apple text-decoration-none px-4">View Work Orders</a>
+                <a asp-controller="Maintenance" asp-action="Board" class="btn-apple-secondary text-decoration-none px-4">Live Board</a>
+            </div>
+        }
+    </div>
+    <div class="col-lg-6 d-none d-lg-block text-center">
+        <img src="~/images/dashboard-graphic.png.jpg" class="img-fluid" style="max-width: 80%;" alt="Dashboard Illustration" />
+    </div>
+    
 </div>
 
 <!-- Stats Row -->
 <div class="row g-3 mb-5">
     <div class="col-6 col-md-4 col-xl">
         <div class="stat-card">
-            <div class="stat-number text-blue">@ViewBag.AvailableUnits</div>
+            <div class="stat-number ">@ViewBag.AvailableUnits</div>
             <div class="stat-label">Available Units</div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-xl">
         <div class="stat-card">
-            <div class="stat-number text-green">@ViewBag.ActiveLeases</div>
+            <div class="stat-number ">@ViewBag.ActiveLeases</div>
             <div class="stat-label">Active Leases</div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-xl">
         <div class="stat-card">
-            <div class="stat-number text-orange">@ViewBag.OpenMaintenance</div>
+            <div class="stat-number ">@ViewBag.OpenMaintenance</div>
             <div class="stat-label">Open Maintenance</div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-xl">
         <div class="stat-card">
-            <div class="stat-number text-purple">@ViewBag.TotalProperties</div>
+            <div class="stat-number ">@ViewBag.TotalProperties</div>
             <div class="stat-label">Properties</div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-xl">
         <div class="stat-card">
-            <div class="stat-number text-red">@ViewBag.PendingApplications</div>
+            <div class="stat-number ">@ViewBag.PendingApplications</div>
             <div class="stat-label">Pending Applications</div>
         </div>
     </div>
