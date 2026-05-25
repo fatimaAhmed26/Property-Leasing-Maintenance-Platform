@@ -218,17 +218,60 @@ body {
     font-size:   .9rem;
     vertical-align: middle;
 }
+
+.apple-table .table {
+    margin-bottom: 0 !important;
+    background-color: transparent !important;
+}
+
 .apple-table tbody tr:last-child td { border-bottom: none; }
 .apple-table tbody tr { transition: var(--transition); }
 .apple-table tbody tr:hover { background: #f9f9fb; }
 
 /* ── Badges ─────────────────────────────────────────────────────────────── */
 .badge {
-    border-radius: 980px;
-    font-weight:   500;
-    font-size:     .75rem;
-    padding:       4px 10px;
-    letter-spacing: .1px;
+    padding: 6px 12px !important;
+    font-weight: 600 !important;
+    border-radius: 980px !important;
+    letter-spacing: 0.5px;
+}
+
+    /* the status text color */
+    .badge.text-green {
+        background-color: rgba(48, 209, 88, 0.15) !important;
+        color: #30d158 !important;
+        border: 1px solid rgba(48, 209, 88, 0.3);
+    }
+
+    .badge.text-red {
+        background-color: rgba(255, 55, 95, 0.15) !important;
+        color: #ff375f !important;
+        border: 1px solid rgba(255, 55, 95, 0.3);
+    }
+
+    .badge.text-blue {
+        background-color: rgba(0, 113, 227, 0.15) !important;
+        color: #0071e3 !important;
+        border: 1px solid rgba(0, 113, 227, 0.3);
+    }
+
+    .badge.text-purple {
+        background-color: rgba(94, 92, 230, 0.15) !important;
+        color: #5e5ce6 !important;
+        border: 1px solid rgba(94, 92, 230, 0.3);
+    }
+
+    .badge.text-muted {
+        background-color: rgba(134, 134, 139, 0.15) !important;
+        color: var(--apple-gray) !important;
+        border: 1px solid rgba(134, 134, 139, 0.3);
+    }
+
+/* Reject button hover color */
+.btn-reject-hover:hover {
+    background-color: #ff375f !important;
+    color: white !important;
+    border-color: #ff375f !important;
 }
 
 /* ── Alerts ─────────────────────────────────────────────────────────────── */
