@@ -5,7 +5,7 @@
 
 <div class="row justify-content-center">
     <div class="col-md-5">
-        <div class="card shadow-sm mt-4">
+        <div class="card mt-4">
             <div class="card-body p-4">
                 <h2 class="card-title mb-4 text-center">Create Account</h2>
                 <form asp-action="Register" method="post">
@@ -14,42 +14,42 @@
                     <div class="mb-3">
                         <label asp-for="FullName" class="form-label"></label>
                         <input asp-for="FullName" class="form-control" />
-                        <span asp-validation-for="FullName" class="text-danger"></span>
+                        <span asp-validation-for="FullName" class="text-red"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label"></label>
                         <input asp-for="Email" class="form-control" autocomplete="email" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
+                        <span asp-validation-for="Email" class="text-red"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="Phone" class="form-label"></label>
                         <input asp-for="Phone" class="form-control" placeholder="e.g. 33334444" />
-                        <span asp-validation-for="Phone" class="text-danger"></span>
-                        <div class="form-text">Used to track your maintenance requests without logging in.</div>
+                        <span asp-validation-for="Phone" class="text-red"></span>
+                        <div class="form-text" style="color: var(--text-muted);">Used to track your maintenance requests without logging in.</div>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="Password" class="form-label"></label>
                         <input asp-for="Password" class="form-control" autocomplete="new-password" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <span asp-validation-for="Password" class="text-red"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="ConfirmPassword" class="form-label"></label>
                         <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
-                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        <span asp-validation-for="ConfirmPassword" class="text-red"></span>
                     </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-success">Create Account</button>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn-apple">Create Account</button>
                     </div>
                 </form>
 
-                <hr />
+                <hr style="border-color: var(--border-color);" />
                 <p class="text-center mb-0">
-                    Already have an account? <a asp-action="Login">Sign in</a>
+                    Already have an account? <a asp-action="Login" style="color: var(--accent-main);">Sign in</a>
                 </p>
             </div>
         </div>

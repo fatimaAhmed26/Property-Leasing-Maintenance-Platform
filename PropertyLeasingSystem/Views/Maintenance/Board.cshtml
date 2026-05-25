@@ -2,20 +2,22 @@
     ViewData["Title"] = "Maintenance Board (Live)";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2>Live Maintenance Board</h2>
-        <p class="text-muted mb-0">Real-time updates via SignalR &mdash; <span id="connectionStatus" class="badge bg-secondary">Connecting...</span></p>
+        <p class="text-muted mb-0" style="font-size: 0.9rem;">
+            Real-time updates via SignalR &mdash; <span id="connectionStatus" class="badge text-orange">Connecting...</span>
+        </p>
     </div>
-    <button id="refreshBtn" class="btn btn-outline-primary" onclick="loadRequests()">Refresh</button>
+    <button id="refreshBtn" class="btn-apple-outline" onclick="loadRequests()">Refresh</button>
 </div>
 
 <div id="boardContainer">
     <div class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border" style="color: var(--apple-blue);" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="mt-2 text-muted">Loading maintenance requests...</p>
+        <p class="mt-3 text-muted fw-semibold">Syncing maintenance requests...</p>
     </div>
 </div>
 
@@ -31,17 +33,17 @@
 
         connection.onreconnecting(() => {
             document.getElementById("connectionStatus").textContent = "Reconnecting...";
-            document.getElementById("connectionStatus").className = "badge bg-warning text-dark";
+            document.getElementById("connectionStatus").className = "badge text-orange";
         });
 
         connection.onreconnected(() => {
             document.getElementById("connectionStatus").textContent = "Connected";
-            document.getElementById("connectionStatus").className = "badge bg-success";
+            document.getElementById("connectionStatus").className = "badge text-green";
         });
 
         connection.onclose(() => {
             document.getElementById("connectionStatus").textContent = "Disconnected";
-            document.getElementById("connectionStatus").className = "badge bg-danger";
+            document.getElementById("connectionStatus").className = "badge text-red";
         });
 
         // Listen for status updates broadcast from the API hub
@@ -52,11 +54,11 @@
                 if (statusCell) {
                     statusCell.innerHTML = statusBadge(newStatus);
                 }
-                // flash the row
-                row.classList.add("table-warning");
-                setTimeout(() => row.classList.remove("table-warning"), 2000);
+                // flash the row using a custom transition instead of bootstrap warning
+                row.style.backgroundColor = "rgba(0, 113, 227, 0.1)";
+                setTimeout(() => row.style.backgroundColor = "", 2000);
             } else {
-                loadRequests();
+                loadRequests(); // If it's not in the table, reload the board
             }
         });
 
@@ -69,29 +71,35 @@
                 await connection.start();
                 await connection.invoke("JoinMaintenanceBoard");
                 document.getElementById("connectionStatus").textContent = "Connected";
-                document.getElementById("connectionStatus").className = "badge bg-success";
+                document.getElementById("connectionStatus").className = "badge text-green";
             } catch (err) {
                 document.getElementById("connectionStatus").textContent = "Error";
-                document.getElementById("connectionStatus").className = "badge bg-danger";
+                document.getElementById("connectionStatus").className = "badge text-red";
                 console.error("SignalR connection error:", err);
             }
         }
 
+        // Map statuses to your custom CSS utility colors
         function statusBadge(status) {
             const map = {
-                "Submitted": "bg-secondary",
-                "Assigned": "bg-info text-dark",
-                "InProgress": "bg-warning text-dark",
-                "Resolved": "bg-success",
-                "Closed": "bg-dark"
+                "Submitted": "text-muted",
+                "Assigned": "text-blue",
+                "InProgress": "text-orange",
+                "Resolved": "text-green",
+                "Closed": "text-purple"
             };
-            const cls = map[status] || "bg-light text-dark";
+            const cls = map[status] || "text-muted";
             return `<span class="badge ${cls}">${status}</span>`;
         }
 
+        // Map priorities to your custom CSS utility colors
         function priorityBadge(priority) {
-            const map = { "High": "bg-danger", "Medium": "bg-warning text-dark", "Low": "bg-secondary" };
-            const cls = map[priority] || "bg-secondary";
+            const map = {
+                "High": "text-red",
+                "Medium": "text-orange",
+                "Low": "text-muted"
+            };
+            const cls = map[priority] || "text-muted";
             return `<span class="badge ${cls}">${priority}</span>`;
         }
 
@@ -126,28 +134,32 @@
                 else groups["Submitted"].push(r);
             });
 
-            let html = '<div class="row">';
+            // Build the Kanban Board
+            let html = '<div class="row g-3">';
             columns.forEach(col => {
                 const items = groups[col];
-                html += `<div class="col">
-                    <div class="card h-100">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <strong>${col === "InProgress" ? "In Progress" : col}</strong>
-                            <span class="badge bg-primary rounded-pill">${items.length}</span>
+                html += `<div class="col-12 col-md-6 col-xl">
+                    <div class="h-100 p-2" style="background: rgba(0,0,0,0.02); border-radius: var(--radius-lg); border: 1px dashed var(--apple-border);">
+                        <div class="d-flex justify-content-between align-items-center mb-3 px-2 pt-2">
+                            <strong class="text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">${col === "InProgress" ? "In Progress" : col}</strong>
+                            <span class="badge text-muted" style="background: transparent; border: none;">${items.length}</span>
                         </div>
-                        <div class="card-body p-2">`;
+                        <div>`;
+
                 if (items.length === 0) {
-                    html += `<p class="text-muted text-center small mt-3">Empty</p>`;
+                    html += `<p class="text-muted text-center small mt-4" style="opacity: 0.5;">No tickets</p>`;
                 }
+
+                // Build the individual tickets using custom apple-card styling
                 items.forEach(r => {
-                    html += `<div class="card mb-2 shadow-sm" data-id="${r.requestId || r.id || ''}">
-                        <div class="card-body p-2">
-                            <div class="d-flex justify-content-between">
-                                <strong class="small">Ticket #${r.requestId || r.id}</strong>
-                                ${priorityBadge(r.priority)}
-                            </div>
-                            <p class="small mb-1 mt-1">${r.description || ''}</p>
-                            <small class="text-muted">Unit: ${r.unitId || ''}</small>
+                    html += `<div class="apple-card mb-2" data-id="${r.requestId || r.id || ''}" style="padding: 16px; cursor: default;">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <strong style="font-size: 0.9rem;">#${r.requestId || r.id}</strong>
+                            ${priorityBadge(r.priority)}
+                        </div>
+                        <p class="small mb-3 text-muted lh-sm">${(r.description || '').substring(0, 80)}...</p>
+                        <div class="d-flex justify-content-between align-items-center border-top pt-2" style="border-color: var(--apple-border) !important;">
+                            <small class="text-blue fw-semibold">Unit ${r.unitId || ''}</small>
                         </div>
                     </div>`;
                 });
@@ -155,22 +167,23 @@
             });
             html += '</div>';
 
-            // Also render as a table with data-id attributes for live updates
-            html += `<h5 class="mt-4">All Requests</h5>
-            <div class="table-responsive">
-            <table class="table table-sm table-hover">
-                <thead class="table-light">
+            // Build the Data Table using apple-table
+            html += `<h5 class="mt-5 mb-3 text-muted text-uppercase fw-bold" style="font-size: .85rem; letter-spacing: .5px;">All Requests Log</h5>
+            <div class="apple-table">
+            <table class="table mb-0">
+                <thead>
                     <tr><th>#</th><th>Unit</th><th>Description</th><th>Priority</th><th>Status</th><th>Reported</th></tr>
                 </thead>
                 <tbody>`;
+
             requests.forEach(r => {
                 html += `<tr data-id="${r.requestId || r.id}">
-                    <td>#${r.requestId || r.id}</td>
-                    <td>${r.unitId || ''}</td>
-                    <td>${(r.description || '').substring(0, 60)}${(r.description || '').length > 60 ? '...' : ''}</td>
+                    <td><strong>#${r.requestId || r.id}</strong></td>
+                    <td class="text-blue fw-semibold">${r.unitId || ''}</td>
+                    <td class="text-muted">${(r.description || '').substring(0, 60)}${(r.description || '').length > 60 ? '...' : ''}</td>
                     <td>${priorityBadge(r.priority)}</td>
                     <td class="status-cell">${statusBadge(r.status)}</td>
-                    <td>${r.reportedAt ? new Date(r.reportedAt).toLocaleDateString() : ''}</td>
+                    <td class="text-muted">${r.reportedAt ? new Date(r.reportedAt).toLocaleDateString() : ''}</td>
                 </tr>`;
             });
             html += '</tbody></table></div>';
