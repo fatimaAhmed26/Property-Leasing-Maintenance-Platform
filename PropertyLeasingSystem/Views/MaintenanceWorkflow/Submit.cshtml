@@ -25,7 +25,12 @@
                             <option value="">-- Select your unit --</option>
                             @foreach (var u in tenantUnits)
                             {
-                                <option value="@u.UnitId">Unit @u.UnitNumber (@u.Property?.PropertyName)</option>
+                                // Check if property name exists to avoid empty parentheses
+                                string propertyDisplay = u.Property != null ? $" ({u.Property.PropertyName})" : "";
+
+                                <option value="@u.UnitId">
+                                    Unit @u.UnitNumber@propertyDisplay
+                                </option>
                             }
                         </select>
                     }

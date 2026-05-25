@@ -18,7 +18,11 @@ namespace PropertyLeasingSystem.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var tenants = await _context.Tenants.ToListAsync();
+            var tenants = await _context.Tenants
+                    .Include(t => t.Applications)
+                    .Include(t => t.Leases)
+                    .ToListAsync();
+
             return View(tenants);
         }
 
