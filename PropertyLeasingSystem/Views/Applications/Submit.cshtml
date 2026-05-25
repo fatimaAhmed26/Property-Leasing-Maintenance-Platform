@@ -7,10 +7,7 @@
     <div class="col-md-7">
         <h2 class="mb-4">Apply for a Unit</h2>
 
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger">@TempData["Error"]</div>
-        }
+       
 
         @if (units.Any())
         {
@@ -39,7 +36,7 @@
                 </div>
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn-apple">Submit Application</button>
-                    <a asp-controller="Home" asp-action="Index" class="btn-apple-outline">Cancel</a>
+                    <a asp-controller="Home" asp-action="Index" class="btn-apple-outline text-decoration-none">Cancel</a>
                 </div>
             </form>
         }
