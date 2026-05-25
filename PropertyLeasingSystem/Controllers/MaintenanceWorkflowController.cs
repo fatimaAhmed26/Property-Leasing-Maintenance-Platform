@@ -32,7 +32,7 @@ namespace PropertyLeasingSystem.Controllers
             _hub = hub;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search, string? status)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var appUser = await _context.Users.FindAsync(userId);
@@ -47,10 +47,28 @@ namespace PropertyLeasingSystem.Controllers
             else if (User.IsInRole(WorkflowRoles.MaintenanceStaff) && appUser?.StaffId != null)
                 query = query.Where(r => r.AssignedStaffId == appUser.StaffId);
 
-            var requests = await query.OrderByDescending(r => r.ReportedAt).ToListAsync();
+            // Search by ticket number, tenant name, or description
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(r =>
+                    r.Tenant!.FullName.Contains(search) ||
+                    r.Description.Contains(search) ||
+                    r.RequestId.ToString().Contains(search));
+
+            // Filter by status
+            if (!string.IsNullOrWhiteSpace(status))
+                query = query.Where(r => r.Status == status);
+
+            var requests = await query
+                .OrderByDescending(r => r.ReportedAt)
+                .ToListAsync();
 
             if (User.IsInRole(WorkflowRoles.PropertyManager))
-                ViewBag.StaffList = await _context.Staffs.Where(s => s.IsAvailable).ToListAsync();
+                ViewBag.StaffList = await _context.Staffs
+                    .Where(s => s.IsAvailable)
+                    .ToListAsync();
+
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentStatus = status;
 
             return View(requests);
         }
@@ -67,7 +85,8 @@ namespace PropertyLeasingSystem.Controllers
                 var leases = await _context.Leases
                     .Include(l => l.Unit)
                     .Where(l => l.TenantId == appUser.TenantId &&
-                           (l.Status == ApplicationStatuses.LeaseActive || l.Status == ApplicationStatuses.Renewed))
+                           (l.Status == ApplicationStatuses.LeaseActive ||
+                            l.Status == ApplicationStatuses.Renewed))
                     .ToListAsync();
                 ViewBag.TenantUnits = leases.Select(l => l.Unit).ToList();
             }
@@ -99,7 +118,8 @@ namespace PropertyLeasingSystem.Controllers
                 return View(dto);
             }
 
-            var unit = await _context.Units.FirstOrDefaultAsync(u => u.UnitId == dto.UnitId);
+            var unit = await _context.Units
+                .FirstOrDefaultAsync(u => u.UnitId == dto.UnitId);
             if (unit == null)
             {
                 TempData["Error"] = "Unit was not found.";
@@ -118,9 +138,11 @@ namespace PropertyLeasingSystem.Controllers
 
             _context.MaintenanceRequests.Add(request);
             await _context.SaveChangesAsync();
-            await _hub.Clients.Group("MaintenanceBoard").SendAsync("NewMaintenanceRequest");
+            await _hub.Clients.Group("MaintenanceBoard")
+                .SendAsync("NewMaintenanceRequest");
 
-            TempData["Success"] = $"Maintenance request submitted. Your ticket number is {request.RequestId}.";
+            TempData["Success"] =
+                $"Maintenance request submitted. Your ticket number is {request.RequestId}.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -129,7 +151,8 @@ namespace PropertyLeasingSystem.Controllers
         [Authorize(Roles = WorkflowRoles.PropertyManager)]
         public async Task<IActionResult> Assign(int id, int staffId)
         {
-            var request = await _context.MaintenanceRequests.FirstOrDefaultAsync(r => r.RequestId == id);
+            var request = await _context.MaintenanceRequests
+                .FirstOrDefaultAsync(r => r.RequestId == id);
             if (request == null)
             {
                 TempData["Error"] = "Maintenance request was not found.";
@@ -138,9 +161,7 @@ namespace PropertyLeasingSystem.Controllers
 
             var userRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
             var validation = _maintenanceLifecycleService.ValidateMaintenanceTransition(
-                request,
-                MaintenanceStatuses.Assigned,
-                userRole);
+                request, MaintenanceStatuses.Assigned, userRole);
 
             if (!validation.IsValid)
             {
@@ -151,8 +172,13 @@ namespace PropertyLeasingSystem.Controllers
             request.Status = MaintenanceStatuses.Assigned;
             request.AssignedStaffId = staffId > 0 ? staffId : null;
             await _context.SaveChangesAsync();
-            await _hub.Clients.Group("MaintenanceBoard").SendAsync("MaintenanceStatusUpdated", request.RequestId, MaintenanceStatuses.Assigned);
-            await NotifyTenant(request.TenantId, $"Your maintenance request #{request.RequestId} has been assigned to staff.");
+
+            await _hub.Clients.Group("MaintenanceBoard")
+                .SendAsync("MaintenanceStatusUpdated",
+                    request.RequestId, MaintenanceStatuses.Assigned);
+
+            await NotifyTenant(request.TenantId,
+                $"Your maintenance request #{request.RequestId} has been assigned to staff.");
 
             TempData["Success"] = "Request assigned successfully.";
             return RedirectToAction(nameof(Index));
@@ -169,7 +195,8 @@ namespace PropertyLeasingSystem.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var request = await _context.MaintenanceRequests.FirstOrDefaultAsync(r => r.RequestId == id);
+            var request = await _context.MaintenanceRequests
+                .FirstOrDefaultAsync(r => r.RequestId == id);
             if (request == null)
             {
                 TempData["Error"] = "Maintenance request was not found.";
@@ -178,9 +205,7 @@ namespace PropertyLeasingSystem.Controllers
 
             var userRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
             var validation = _maintenanceLifecycleService.ValidateMaintenanceTransition(
-                request,
-                nextStatus,
-                userRole);
+                request, nextStatus, userRole);
 
             if (!validation.IsValid)
             {
@@ -190,8 +215,13 @@ namespace PropertyLeasingSystem.Controllers
 
             request.Status = nextStatus;
             await _context.SaveChangesAsync();
-            await _hub.Clients.Group("MaintenanceBoard").SendAsync("MaintenanceStatusUpdated", request.RequestId, nextStatus);
-            await NotifyTenant(request.TenantId, $"Your maintenance request #{request.RequestId} status updated to: {nextStatus}.");
+
+            await _hub.Clients.Group("MaintenanceBoard")
+                .SendAsync("MaintenanceStatusUpdated",
+                    request.RequestId, nextStatus);
+
+            await NotifyTenant(request.TenantId,
+                $"Your maintenance request #{request.RequestId} status updated to: {nextStatus}.");
 
             TempData["Success"] = $"Request status updated to {nextStatus}.";
             return RedirectToAction(nameof(Index));
@@ -202,7 +232,8 @@ namespace PropertyLeasingSystem.Controllers
         [Authorize(Roles = WorkflowRoles.PropertyManager + "," + WorkflowRoles.Tenant)]
         public async Task<IActionResult> Close(int id)
         {
-            var request = await _context.MaintenanceRequests.FirstOrDefaultAsync(r => r.RequestId == id);
+            var request = await _context.MaintenanceRequests
+                .FirstOrDefaultAsync(r => r.RequestId == id);
             if (request == null)
             {
                 TempData["Error"] = "Maintenance request was not found.";
@@ -211,9 +242,7 @@ namespace PropertyLeasingSystem.Controllers
 
             var userRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
             var validation = _maintenanceLifecycleService.ValidateMaintenanceTransition(
-                request,
-                MaintenanceStatuses.Closed,
-                userRole);
+                request, MaintenanceStatuses.Closed, userRole);
 
             if (!validation.IsValid)
             {
@@ -223,7 +252,9 @@ namespace PropertyLeasingSystem.Controllers
 
             request.Status = MaintenanceStatuses.Closed;
             await _context.SaveChangesAsync();
-            await NotifyTenant(request.TenantId, $"Your maintenance request #{request.RequestId} has been closed.");
+
+            await NotifyTenant(request.TenantId,
+                $"Your maintenance request #{request.RequestId} has been closed.");
 
             TempData["Success"] = "Request closed successfully.";
             return RedirectToAction(nameof(Index));
@@ -231,7 +262,8 @@ namespace PropertyLeasingSystem.Controllers
 
         private async Task NotifyTenant(int tenantId, string message)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.TenantId == tenantId);
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.TenantId == tenantId);
             if (user == null) return;
 
             _context.Notifications.Add(new Notification
