@@ -178,6 +178,83 @@ body {
 }
 .btn-apple-outline:hover { background: var(--apple-blue); color: #fff; }
 
+/* Reject button hover color */
+.btn-reject-hover:hover {
+    background-color: #ff375f !important;
+    color: white !important;
+    border-color: #ff375f !important;
+}
+.btn-apple-success {
+    background: var(--apple-green, #30d158);
+    color: #fff;
+    border: none;
+    border-radius: 980px;
+    padding: 10px 22px;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+}
+.btn-apple-success:hover {
+    background: #28b84d; 
+    color: #fff; 
+    box-shadow: 0 4px 16px rgba(48, 209, 88, 0.35); 
+}
+/* Secondary (Grey) Outline Button */
+.btn-apple-secondary {
+    background: transparent;
+    color: var(--apple-gray);
+    border: 1.5px solid var(--apple-border);
+    border-radius: 980px;
+    padding: 9px 22px;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+}
+.btn-apple-secondary:hover {
+    background: var(--apple-gray);
+    color: #fff !important;
+    border-color: var(--apple-gray);
+    text-decoration: none;
+}
+
+/* Danger (Red) Outline Button */
+.btn-apple-danger {
+    background: transparent;
+    color: #ff375f;
+    border: 1.5px solid rgba(255, 55, 95, 0.5);
+    border-radius: 980px;
+    padding: 9px 22px;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+}
+.btn-apple-danger:hover {
+    background: #ff375f;
+    color: #fff !important;
+    border-color: #ff375f;
+    text-decoration: none;
+}
+/* Solid Danger Button for Destructive Actions */
+.btn-apple-danger-solid {
+    background: #ff375f;
+    color: #fff;
+    border: none;
+    border-radius: 980px;
+    padding: 10px 22px;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+}
+.btn-apple-danger-solid:hover {
+    background: #d82c4f;
+    color: #fff !important;
+    box-shadow: 0 4px 16px rgba(255, 55, 95, 0.35);
+}
+
 /* ── Forms ──────────────────────────────────────────────────────────────── */
 .form-control, .form-select {
     border:        1.5px solid var(--apple-border);
@@ -273,13 +350,6 @@ body {
         border: 1px solid rgba(255, 159, 10, 0.3);
     }
 
-/* Reject button hover color */
-.btn-reject-hover:hover {
-    background-color: #ff375f !important;
-    color: white !important;
-    border-color: #ff375f !important;
-}
-
 /* ── Alerts ─────────────────────────────────────────────────────────────── */
 .alert {
     border-radius: var(--radius-md);
@@ -333,6 +403,35 @@ h5 {
 ::-webkit-scrollbar-thumb { background: #c7c7cc; border-radius: 3px; }
 
 
+/* ── Search bar ───────────────────────────────────────── */
+.apple-search-icon {
+    background-color: var(--apple-white);
+    border: 1.5px solid var(--apple-border);
+    border-right: none;
+    color: var(--apple-gray);
+}
+.apple-search-input {
+    border-left: none;
+}
+.apple-search-input:focus {
+    border-color: var(--apple-border) !important;
+    box-shadow: none !important;
+}
+
+/* --- Input group fix --- */
+.input-group > .input-group-text:first-child {
+    border-top-left-radius: var(--radius-sm) !important;
+    border-bottom-left-radius: var(--radius-sm) !important;
+    border: 1.5px solid var(--apple-border);
+}
+
+.input-group > .form-control:not(:first-child) {
+    border-top-right-radius: var(--radius-sm) !important;
+    border-bottom-right-radius: var(--radius-sm) !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
 /* --- Utility Colors --- */
 .text-blue {
     color: #0071e3 !important;
@@ -353,3 +452,4 @@ h5 {
 .text-red {
     color: #ff375f !important;
 }
+

@@ -3,9 +3,9 @@
 @using PropertyLeasing.API.Models
 @{
     ViewData["Title"] = "Maintenance Requests";
-    var staffList      = ViewBag.StaffList     as List<Staff> ?? new List<Staff>();
-    var currentSearch  = ViewBag.CurrentSearch as string     ?? "";
-    var currentStatus  = ViewBag.CurrentStatus as string     ?? "";
+    var staffList     = ViewBag.StaffList     as List<Staff> ?? new List<Staff>();
+    var currentSearch = ViewBag.CurrentSearch as string      ?? "";
+    var currentStatus = ViewBag.CurrentStatus as string      ?? "";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -31,73 +31,44 @@
     </div>
 }
 
-<!-- Search and Filter -->
-<form method="get" asp-action="Index" class="mb-4">
-    <div class="row g-2 align-items-end">
-
-        <div class="col-md-5">
-            <label class="form-label fw-semibold">Search</label>
-            <div class="input-group">
-                <span class="input-group-text">&#128269;</span>
-                <input type="text"
-                       name="search"
-                       value="@currentSearch"
-                       class="form-control"
-                       placeholder="Search by ticket #, tenant name, or description..." />
+<div class="apple-card mb-4">
+    <form method="get" asp-action="Index">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text apple-search-icon">&#128269;</span>
+                    <input type="text" name="search" value="@currentSearch" class="form-control apple-search-input" 
+                           placeholder="Search by ticket #, tenant, or description..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Filter by Status</label>
+                <select name="status" class="form-control">
+                    <option value="">All Statuses</option>
+                    <option value="@MaintenanceStatuses.Submitted" selected="@(currentStatus == MaintenanceStatuses.Submitted)">Submitted</option>
+                    <option value="@MaintenanceStatuses.Assigned" selected="@(currentStatus == MaintenanceStatuses.Assigned)">Assigned</option>
+                    <option value="@MaintenanceStatuses.InProgress" selected="@(currentStatus == MaintenanceStatuses.InProgress)">In Progress</option>
+                    <option value="@MaintenanceStatuses.Resolved" selected="@(currentStatus == MaintenanceStatuses.Resolved)">Resolved</option>
+                    <option value="@MaintenanceStatuses.Closed" selected="@(currentStatus == MaintenanceStatuses.Closed)">Closed</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn-apple w-100">Apply</button>
+                <a asp-action="Index" class="btn-apple-outline w-100 text-center text-decoration-none">Clear</a>
             </div>
         </div>
+    </form>
+</div>
 
-        <div class="col-md-3">
-            <label class="form-label fw-semibold">Filter by Status</label>
-            <select name="status" class="form-select">
-                <option value="">All Statuses</option>
-                <option value="@MaintenanceStatuses.Submitted"
-                        selected="@(currentStatus == MaintenanceStatuses.Submitted)">
-                    Submitted
-                </option>
-                <option value="@MaintenanceStatuses.Assigned"
-                        selected="@(currentStatus == MaintenanceStatuses.Assigned)">
-                    Assigned
-                </option>
-                <option value="@MaintenanceStatuses.InProgress"
-                        selected="@(currentStatus == MaintenanceStatuses.InProgress)">
-                    In Progress
-                </option>
-                <option value="@MaintenanceStatuses.Resolved"
-                        selected="@(currentStatus == MaintenanceStatuses.Resolved)">
-                    Resolved
-                </option>
-                <option value="@MaintenanceStatuses.Closed"
-                        selected="@(currentStatus == MaintenanceStatuses.Closed)">
-                    Closed
-                </option>
-            </select>
-        </div>
-
-        <div class="col-md-4 d-flex gap-2 align-items-end">
-            <button type="submit" class="btn btn-primary w-100">Apply</button>
-            <a asp-action="Index" class="btn btn-outline-secondary w-100">Clear</a>
-        </div>
-
-    </div>
-</form>
-
-<!-- Results count -->
-<p class="text-muted small mb-2">
+<p class="text-muted small mb-3 fw-semibold">
     Showing <strong>@Model.Count()</strong> request(s)
-    @if (!string.IsNullOrWhiteSpace(currentSearch))
-    {
-        <span> matching "<strong>@currentSearch</strong>"</span>
-    }
-    @if (!string.IsNullOrWhiteSpace(currentStatus))
-    {
-        <span> with status <strong>@currentStatus</strong></span>
-    }
+    @if (!string.IsNullOrWhiteSpace(currentSearch)) { <span> matching "<strong>@currentSearch</strong>"</span> }
 </p>
 
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
+<div class="apple-table">
+    <table class="table mb-0 align-middle">
+        <thead>
             <tr>
                 <th>Ticket #</th>
                 <th>Tenant</th>
@@ -116,11 +87,12 @@
                     <td><strong>#@r.RequestId</strong></td>
                     <td>@r.Tenant?.FullName</td>
                     <td class="text-blue fw-semibold">@r.Unit?.UnitNumber</td>
-                    <td class="text-muted">@(r.Description.Length > 40 ? r.Description.Substring(0, 40) + "..." : r.Description)</td>
+                    
+                    <td class="text-muted" style="max-width: 300px; white-space: normal;">@r.Description</td>
+                    
                     <td>
                         @{
-                            var priorityClass = r.Priority switch
-                            {
+                            var priorityClass = r.Priority switch {
                                 "High" => "text-red",
                                 "Medium" => "text-orange",
                                 _ => "text-muted"
@@ -130,8 +102,7 @@
                     </td>
                     <td>
                         @{
-                            var statusClass = r.Status switch
-                            {
+                            var statusClass = r.Status switch {
                                 MaintenanceStatuses.Submitted => "text-muted",
                                 MaintenanceStatuses.Assigned => "text-blue",
                                 MaintenanceStatuses.InProgress => "text-orange",
@@ -144,57 +115,42 @@
                     </td>
                     <td class="text-muted">@r.ReportedAt.ToString("MMM d, yyyy")</td>
                     <td>
-                        @if (User.IsInRole(WorkflowRoles.PropertyManager) &&
-                             r.Status == MaintenanceStatuses.Submitted)
-                        {
+                        @if (User.IsInRole(WorkflowRoles.PropertyManager) && r.Status == MaintenanceStatuses.Submitted) {
                             <form asp-action="Assign" method="post" class="d-inline d-flex gap-2 align-items-center">
                                 <input type="hidden" name="id" value="@r.RequestId" />
-                                <select name="staffId" class="form-select form-select-sm" style="width:auto; border-radius: var(--radius-sm);" required>
+                                <select name="staffId" class="form-control form-control-sm" required>
                                     <option value="">Select staff</option>
-                                    @foreach (var s in staffList)
-                                    {
-                                        <option value="@s.StaffId">
-                                            @s.FullName (@s.SkillType)
-                                        </option>
-                                    }
+                                    @foreach (var s in staffList) { <option value="@s.StaffId">@s.FullName</option> }
                                 </select>
-                                <button class="btn-apple-outline py-1 px-3" style="font-size: 0.8rem;">Assign</button>
+                                <button class="btn-apple-outline btn-sm py-1 px-3">Assign</button>
                             </form>
                         }
-                        
-                        @if (User.IsInRole(WorkflowRoles.MaintenanceStaff))
-                        {
-                            @if (r.Status == MaintenanceStatuses.Assigned)
-                            {
+                        @if (User.IsInRole(WorkflowRoles.MaintenanceStaff)) {
+                            @if (r.Status == MaintenanceStatuses.Assigned) {
                                 <form asp-action="UpdateStatus" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@r.RequestId" />
                                     <input type="hidden" name="nextStatus" value="@MaintenanceStatuses.InProgress" />
                                     <button class="btn-apple btn-sm py-1">Start Work</button>
                                 </form>
                             }
-                            @if (r.Status == MaintenanceStatuses.InProgress)
-                            {
+                            @if (r.Status == MaintenanceStatuses.InProgress) {
                                 <form asp-action="UpdateStatus" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@r.RequestId" />
                                     <input type="hidden" name="nextStatus" value="@MaintenanceStatuses.Resolved" />
-                                    <button class="btn-apple btn-sm py-1" style="background-color: var(--apple-green); border-color: var(--apple-green);">Resolve</button>
+                                    <button class="btn-apple-success btn-sm py-1">Resolve</button>
                                 </form>
                             }
                         }
-                        
-                        @if ((User.IsInRole(WorkflowRoles.PropertyManager) || User.IsInRole(WorkflowRoles.Tenant))
-                             && r.Status == MaintenanceStatuses.Resolved)
-                        {
+                        @if ((User.IsInRole(WorkflowRoles.PropertyManager) || User.IsInRole(WorkflowRoles.Tenant)) && r.Status == MaintenanceStatuses.Resolved) {
                             <form asp-action="Close" method="post" class="d-inline">
                                 <input type="hidden" name="id" value="@r.RequestId" />
-                                <button class="btn-apple-outline btn-sm py-1 text-muted" style="border-color: var(--apple-gray);">Close Ticket</button>
+                                <button class="btn-apple-outline btn-sm py-1 text-muted">Close Ticket</button>
                             </form>
                         }
                     </td>
                 </tr>
             }
-            @if (!Model.Any())
-            {
+            @if (!Model.Any()) {
                 <tr><td colspan="8" class="text-center text-muted py-4">No maintenance requests found.</td></tr>
             }
         </tbody>

@@ -4,50 +4,58 @@
 }
 
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2 class="mb-3">Add New Property</h2>
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <form asp-action="Create" method="post">
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <div class="col-md-7">
+        <div class="mb-4">
+            <h2 class="mb-1">Add New Property</h2>
+            <p class="text-muted mb-0">Enter the details for the new property listing.</p>
+        </div>
 
-                    <div class="mb-3">
-                        <label asp-for="PropertyName" class="form-label"></label>
-                        <input asp-for="PropertyName" class="form-control" />
-                        <span asp-validation-for="PropertyName" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="Address" class="form-label"></label>
-                        <input asp-for="Address" class="form-control" />
-                        <span asp-validation-for="Address" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="City" class="form-label"></label>
-                        <input asp-for="City" class="form-control" />
-                        <span asp-validation-for="City" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="PropertyType" class="form-label"></label>
-                        <select asp-for="PropertyType" class="form-select">
-                            <option value="">-- Select Type --</option>
-                            <option>Apartment</option>
-                            <option>House</option>
-                            <option>Commercial</option>
-                            <option>Office</option>
-                        </select>
-                        <span asp-validation-for="PropertyType" class="text-danger"></span>
-                    </div>
+        <div class="apple-card">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Create</button>
-                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
-            </div>
+                <div class="mb-4">
+                    <label asp-for="PropertyName" class="form-label fw-semibold">Property Name</label>
+                    <input asp-for="PropertyName" class="form-control" placeholder="e.g. Seef Pearl Towers" />
+                    <span asp-validation-for="PropertyName" class="text-red mt-1 d-block" style="font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Address" class="form-label fw-semibold">Street Address</label>
+                    <input asp-for="Address" class="form-control" placeholder="e.g. Building 123, Road 456" />
+                    <span asp-validation-for="Address" class="text-red mt-1 d-block" style="font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="City" class="form-label fw-semibold">City / District</label>
+                    <input asp-for="City" class="form-control" placeholder="e.g. Manama" />
+                    <span asp-validation-for="City" class="text-red mt-1 d-block" style="font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="PropertyType" class="form-label fw-semibold">Property Type</label>
+                    <select asp-for="PropertyType" class="form-select">
+                        <option value="">-- Select Type --</option>
+                        <option>Apartment</option>
+                        <option>House</option>
+                        <option>Residential</option>
+                        <option>Commercial</option>
+                        <option>Office</option>
+                    </select>
+                    <span asp-validation-for="PropertyType" class="text-red mt-1 d-block" style="font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="d-flex gap-3 pt-2 border-top mt-4">
+                    <button type="submit" class="btn-apple px-4 mt-3">Create Property</button>
+                    <a asp-action="Index" class="btn-apple-secondary text-decoration-none px-4 mt-3">Cancel</a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
