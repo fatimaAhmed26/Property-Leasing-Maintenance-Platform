@@ -5,7 +5,7 @@
 
 <div class="row justify-content-center">
     <div class="col-md-7">
-        <h2 class="mb-3">Apply for a Unit</h2>
+        <h2 class="mb-4">Apply for a Unit</h2>
 
         @if (TempData["Error"] != null)
         {
@@ -17,22 +17,20 @@
             <form asp-action="Submit" method="post">
                 <div class="mb-4">
                     <label class="form-label fw-semibold">Select an Available Unit</label>
-                    <div class="row">
+                    <div class="row g-3">
                         @foreach (var u in units)
                         {
-                            <div class="col-md-6 mb-3">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="unitId"
-                                                   id="unit_@u.UnitId" value="@u.UnitId" required />
-                                            <label class="form-check-label" for="unit_@u.UnitId">
-                                                <strong>Unit @u.UnitNumber</strong><br />
-                                                <small class="text-muted">@u.Property?.PropertyName</small><br />
-                                                @u.RentAmount.ToString("C") / month<br />
-                                                <small>@u.Size &mdash; @u.Amenities</small>
-                                            </label>
-                                        </div>
+                            <div class="col-md-6">
+                                <div class="apple-card h-100">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="unitId"
+                                               id="unit_@u.UnitId" value="@u.UnitId" required />
+                                        <label class="form-check-label" for="unit_@u.UnitId">
+                                            <strong>Unit @u.UnitNumber</strong><br />
+                                            <small class="text-muted">@u.Property?.PropertyName</small><br />
+                                            <span class="text-blue fw-bold">@u.RentAmount.ToString("C")</span> / month<br />
+                                            <small>@u.Size &mdash; @u.Amenities</small>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -40,15 +38,15 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Submit Application</button>
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn-apple">Submit Application</button>
+                    <a asp-controller="Home" asp-action="Index" class="btn-apple-outline">Cancel</a>
                 </div>
             </form>
         }
         else
         {
             <div class="alert alert-info">No units are currently available for application.</div>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Back to Home</a>
+            <a asp-controller="Home" asp-action="Index" class="btn-apple-outline">Back to Home</a>
         }
     </div>
 </div>

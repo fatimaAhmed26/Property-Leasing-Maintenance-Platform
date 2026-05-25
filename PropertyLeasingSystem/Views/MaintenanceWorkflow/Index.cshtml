@@ -8,11 +8,11 @@
     var currentStatus  = ViewBag.CurrentStatus as string     ?? "";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Maintenance Requests</h2>
     @if (User.IsInRole(WorkflowRoles.Tenant))
     {
-        <a asp-action="Submit" class="btn btn-primary">Submit Request</a>
+        <a asp-action="Submit" class="btn-apple text-decoration-none">Submit Request</a>
     }
 </div>
 
@@ -113,17 +113,17 @@
             @foreach (var r in Model)
             {
                 <tr>
-                    <td>#@r.RequestId</td>
+                    <td><strong>#@r.RequestId</strong></td>
                     <td>@r.Tenant?.FullName</td>
-                    <td>@r.Unit?.UnitNumber</td>
-                    <td>@r.Description</td>
+                    <td class="text-blue fw-semibold">@r.Unit?.UnitNumber</td>
+                    <td class="text-muted">@(r.Description.Length > 40 ? r.Description.Substring(0, 40) + "..." : r.Description)</td>
                     <td>
                         @{
                             var priorityClass = r.Priority switch
                             {
-                                "High"   => "bg-danger",
-                                "Medium" => "bg-warning text-dark",
-                                _        => "bg-secondary"
+                                "High" => "text-red",
+                                "Medium" => "text-orange",
+                                _ => "text-muted"
                             };
                         }
                         <span class="badge @priorityClass">@r.Priority</span>
@@ -132,27 +132,24 @@
                         @{
                             var statusClass = r.Status switch
                             {
-                                MaintenanceStatuses.Submitted  => "bg-secondary",
-                                MaintenanceStatuses.Assigned   => "bg-info text-dark",
-                                MaintenanceStatuses.InProgress => "bg-warning text-dark",
-                                MaintenanceStatuses.Resolved   => "bg-success",
-                                MaintenanceStatuses.Closed     => "bg-dark",
-                                _                              => "bg-light text-dark"
+                                MaintenanceStatuses.Submitted => "text-muted",
+                                MaintenanceStatuses.Assigned => "text-blue",
+                                MaintenanceStatuses.InProgress => "text-orange",
+                                MaintenanceStatuses.Resolved => "text-green",
+                                MaintenanceStatuses.Closed => "text-purple",
+                                _ => "text-muted"
                             };
                         }
                         <span class="badge @statusClass">@r.Status</span>
                     </td>
-                    <td>@r.ReportedAt.ToString("MMM d, yyyy")</td>
+                    <td class="text-muted">@r.ReportedAt.ToString("MMM d, yyyy")</td>
                     <td>
                         @if (User.IsInRole(WorkflowRoles.PropertyManager) &&
                              r.Status == MaintenanceStatuses.Submitted)
                         {
-                            <form asp-action="Assign" method="post"
-                                  class="d-inline d-flex gap-1 align-items-center">
+                            <form asp-action="Assign" method="post" class="d-inline d-flex gap-2 align-items-center">
                                 <input type="hidden" name="id" value="@r.RequestId" />
-                                <select name="staffId"
-                                        class="form-select form-select-sm"
-                                        style="width:auto;" required>
+                                <select name="staffId" class="form-select form-select-sm" style="width:auto; border-radius: var(--radius-sm);" required>
                                     <option value="">Select staff</option>
                                     @foreach (var s in staffList)
                                     {
@@ -161,37 +158,36 @@
                                         </option>
                                     }
                                 </select>
-                                <button class="btn btn-sm btn-outline-info">Assign</button>
+                                <button class="btn-apple-outline py-1 px-3" style="font-size: 0.8rem;">Assign</button>
                             </form>
                         }
+                        
                         @if (User.IsInRole(WorkflowRoles.MaintenanceStaff))
                         {
                             @if (r.Status == MaintenanceStatuses.Assigned)
                             {
                                 <form asp-action="UpdateStatus" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@r.RequestId" />
-                                    <input type="hidden" name="nextStatus"
-                                           value="@MaintenanceStatuses.InProgress" />
-                                    <button class="btn btn-sm btn-warning">Start</button>
+                                    <input type="hidden" name="nextStatus" value="@MaintenanceStatuses.InProgress" />
+                                    <button class="btn-apple btn-sm py-1">Start Work</button>
                                 </form>
                             }
                             @if (r.Status == MaintenanceStatuses.InProgress)
                             {
                                 <form asp-action="UpdateStatus" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@r.RequestId" />
-                                    <input type="hidden" name="nextStatus"
-                                           value="@MaintenanceStatuses.Resolved" />
-                                    <button class="btn btn-sm btn-success">Resolve</button>
+                                    <input type="hidden" name="nextStatus" value="@MaintenanceStatuses.Resolved" />
+                                    <button class="btn-apple btn-sm py-1" style="background-color: var(--apple-green); border-color: var(--apple-green);">Resolve</button>
                                 </form>
                             }
                         }
-                        @if ((User.IsInRole(WorkflowRoles.PropertyManager) ||
-                              User.IsInRole(WorkflowRoles.Tenant)) &&
-                             r.Status == MaintenanceStatuses.Resolved)
+                        
+                        @if ((User.IsInRole(WorkflowRoles.PropertyManager) || User.IsInRole(WorkflowRoles.Tenant))
+                             && r.Status == MaintenanceStatuses.Resolved)
                         {
                             <form asp-action="Close" method="post" class="d-inline">
                                 <input type="hidden" name="id" value="@r.RequestId" />
-                                <button class="btn btn-sm btn-dark">Close</button>
+                                <button class="btn-apple-outline btn-sm py-1 text-muted" style="border-color: var(--apple-gray);">Close Ticket</button>
                             </form>
                         }
                     </td>
@@ -199,11 +195,7 @@
             }
             @if (!Model.Any())
             {
-                <tr>
-                    <td colspan="8" class="text-center text-muted py-4">
-                        No maintenance requests found.
-                    </td>
-                </tr>
+                <tr><td colspan="8" class="text-center text-muted py-4">No maintenance requests found.</td></tr>
             }
         </tbody>
     </table>
