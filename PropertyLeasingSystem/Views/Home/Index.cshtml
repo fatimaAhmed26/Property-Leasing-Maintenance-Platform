@@ -18,37 +18,36 @@
 <div class="row g-3 mb-5">
     <div class="col-6 col-md-4 col-xl">
         <div class="stat-card">
-            <div class="stat-number" style="color:#0071e3;">@ViewBag.AvailableUnits</div>
+            <div class="stat-number text-blue">@ViewBag.AvailableUnits</div>
             <div class="stat-label">Available Units</div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-xl">
         <div class="stat-card">
-            <div class="stat-number" style="color:#30d158;">@ViewBag.ActiveLeases</div>
+            <div class="stat-number text-green">@ViewBag.ActiveLeases</div>
             <div class="stat-label">Active Leases</div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-xl">
         <div class="stat-card">
-            <div class="stat-number" style="color:#ff9f0a;">@ViewBag.OpenMaintenance</div>
+            <div class="stat-number text-orange">@ViewBag.OpenMaintenance</div>
             <div class="stat-label">Open Maintenance</div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-xl">
         <div class="stat-card">
-            <div class="stat-number" style="color:#5e5ce6;">@ViewBag.TotalProperties</div>
+            <div class="stat-number text-purple">@ViewBag.TotalProperties</div>
             <div class="stat-label">Properties</div>
         </div>
     </div>
     <div class="col-6 col-md-4 col-xl">
         <div class="stat-card">
-            <div class="stat-number" style="color:#ff375f;">@ViewBag.PendingApplications</div>
+            <div class="stat-number text-red">@ViewBag.PendingApplications</div>
             <div class="stat-label">Pending Applications</div>
         </div>
     </div>
 </div>
 
-<!-- Quick Actions -->
 @if (User.Identity?.IsAuthenticated ?? false)
 {
     <h5 class="mb-3" style="color:var(--apple-gray);font-weight:500;font-size:.82rem;letter-spacing:.5px;text-transform:uppercase;">Quick Actions</h5>

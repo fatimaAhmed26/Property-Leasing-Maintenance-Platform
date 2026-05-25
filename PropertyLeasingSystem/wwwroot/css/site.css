@@ -282,3 +282,25 @@ h5 {
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #c7c7cc; border-radius: 3px; }
+
+
+/* --- Utility Colors --- */
+.text-blue {
+    color: #0071e3 !important;
+}
+
+.text-green {
+    color: #30d158 !important;
+}
+
+.text-orange {
+    color: #ff9f0a !important;
+}
+
+.text-purple {
+    color: #5e5ce6 !important;
+}
+
+.text-red {
+    color: #ff375f !important;
+}
