@@ -107,11 +107,20 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowMVC", policy =>
-        policy.WithOrigins("https://localhost:7207", "http://localhost:5209",
-                           "https://localhost:7208", "http://localhost:5210")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials());
+        policy
+            .WithOrigins(
+                // Local development
+                "https://localhost:7207",
+                "http://localhost:5209",
+                "https://localhost:7208",
+                "http://localhost:5210",
+                // Azure deployed URLs — update these with your real URLs
+                "https://mvc-propertyleasing-s2g4-eqb6chdpczf7fkgm.westeurope-01.azurewebsites.net",
+                "https://reporting-propertyleasing-s2g4-eqb6chdpczf7fkgm.westeurope-01.azurewebsites.net"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
 });
 
 var app = builder.Build();
