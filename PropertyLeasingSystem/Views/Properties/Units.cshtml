@@ -4,35 +4,39 @@
     ViewData["Title"] = $"Units - {property?.PropertyName}";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2>Units</h2>
-        <p class="text-muted mb-0">@property?.PropertyName &mdash; @property?.Address, @property?.City</p>
+        <p class="text-muted mb-0">@property?.PropertyName &mdash; @property?.Address</p>
     </div>
     <div class="d-flex gap-2">
-        <a asp-action="CreateUnit" asp-route-propertyId="@property?.PropertyId" class="btn btn-primary">+ Add Unit</a>
-        <a asp-action="Index" class="btn btn-outline-secondary">Back to Properties</a>
+        <a asp-action="CreateUnit" asp-route-propertyId="@property?.PropertyId" class="btn-apple text-decoration-none">+ Add Unit</a>
+        <a asp-action="Index" class="btn-apple-secondary text-decoration-none">Back</a>
     </div>
 </div>
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
+<div class="apple-table">
+    <table class="table mb-0 align-middle">
+        <thead>
             <tr>
                 <th>Unit #</th>
                 <th>Size</th>
                 <th>Rent/Month</th>
                 <th>Amenities</th>
-                <th>Available</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -40,33 +44,71 @@
             @foreach (var u in Model)
             {
                 <tr>
-                    <td><strong>@u.UnitNumber</strong></td>
-                    <td>@u.Size</td>
-                    <td>@u.RentAmount.ToString("C")</td>
-                    <td>@u.Amenities</td>
+                    <td class="fw-bold">@u.UnitNumber</td>
+                    <td class="text-muted">@u.Size</td>
+                    <td class="fw-bold text-blue">@u.RentAmount.ToString("C")</td>
+                    <td class="text-muted">@u.Amenities</td>
                     <td>
-                        @if (u.IsAvailable)
-                        {
-                            <span class="badge bg-success">Available</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">Occupied</span>
-                        }
+                        <span class="badge @(u.IsAvailable ? "text-green" : "text-muted")">
+                            @(u.IsAvailable ? "Available" : "Occupied")
+                        </span>
                     </td>
                     <td>
-                        <a asp-action="EditUnit" asp-route-id="@u.UnitId" class="btn btn-sm btn-outline-secondary">Edit</a>
-                        <form asp-action="DeleteUnit" method="post" class="d-inline"
-                              onsubmit="return confirm('Delete this unit?')">
-                            <input type="hidden" name="id" value="@u.UnitId" />
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
+                        <div class="d-flex gap-2">
+                            <a asp-action="EditUnit" asp-route-id="@u.UnitId" class="btn-apple-secondary btn-sm text-decoration-none py-1 px-3">Edit</a>
+
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#deleteUnitModal_@u.UnitId" class="btn-apple-danger btn-sm text-decoration-none py-1 px-3">Delete</button>
+                        </div>
                     </td>
                 </tr>
+
+                <div class="modal fade" id="deleteUnitModal_@u.UnitId" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content p-4" style="border-radius: var(--radius-lg); border: none; box-shadow: var(--shadow-lg); background: var(--apple-card);">
+
+                            <div class="text-center mb-4">
+                                <h1 class="text-red mb-2" style="font-size: 3rem; line-height: 1;">&#9888;</h1>
+                                <h3 class="fw-bold mb-1">Delete Unit @u.UnitNumber</h3>
+                                <p class="text-muted mb-0">Are you absolutely sure you want to do this?</p>
+                            </div>
+
+                            <div class="alert alert-danger text-center mb-4 px-3 py-2" style="font-size: 0.9rem;">
+                                <strong>Warning:</strong> Deleting this unit will permanently remove it from the database.
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="row border-bottom py-2 mx-0">
+                                    <div class="col-4 text-muted fw-semibold px-0">Unit</div>
+                                    <div class="col-8 fw-bold text-dark text-end px-0">@u.UnitNumber</div>
+                                </div>
+                                <div class="row border-bottom py-2 mx-0">
+                                    <div class="col-4 text-muted fw-semibold px-0">Rent</div>
+                                    <div class="col-8 text-blue fw-bold text-end px-0">@u.RentAmount.ToString("C")</div>
+                                </div>
+                                <div class="row py-2 mx-0">
+                                    <div class="col-4 text-muted fw-semibold px-0">Status</div>
+                                    <div class="col-8 text-end px-0">
+                                        <span class="badge @(u.IsAvailable ? "text-green" : "text-muted")">
+                                            @(u.IsAvailable ? "Available" : "Occupied")
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form asp-action="DeleteUnit" asp-route-id="@u.UnitId" method="post" class="m-0">
+                                <div class="d-flex gap-3">
+                                    <button type="button" class="btn-apple-secondary w-50" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn-apple-danger-solid w-50">Yes, Delete</button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
             }
             @if (!Model.Any())
             {
-                <tr><td colspan="6" class="text-center text-muted">No units found.</td></tr>
+                <tr><td colspan="6" class="text-center text-muted py-4">No units found.</td></tr>
             }
         </tbody>
     </table>

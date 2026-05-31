@@ -11,7 +11,7 @@
 <body>
 
 <nav class="apple-nav">
-    <div class="d-flex align-items-center w-100">
+       <div class="d-flex align-items-center w-100">
         <a class="navbar-brand me-4" asp-controller="Home" asp-action="Index">&#127968; Property Leasing</a>
 
         <button class="navbar-toggler d-md-none border-0 ms-auto" type="button"
@@ -144,9 +144,13 @@
     </main>
 </div>
 
-<footer class="apple-footer">
-    &copy; 2026 Property Leasing &amp; Maintenance Platform
-</footer>
+    <footer class="apple-footer">
+        <div class="container">
+            <span>&copy; 2026 Property Leasing &amp; Maintenance Platform</span>
+            <span class="mx-2 text-muted">|</span>
+            <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none" style="color: #6e6e73;">Privacy Policy</a>
+        </div>
+    </footer>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

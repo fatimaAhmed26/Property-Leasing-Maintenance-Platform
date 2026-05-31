@@ -152,16 +152,16 @@
 
                 // Build the individual tickets using custom apple-card styling
                 items.forEach(r => {
-                    html += `<div class="apple-card mb-2" data-id="${r.requestId || r.id || ''}" style="padding: 16px; cursor: default;">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <strong style="font-size: 0.9rem;">#${r.requestId || r.id}</strong>
-                            ${priorityBadge(r.priority)}
-                        </div>
-                        <p class="small mb-3 text-muted lh-sm">${(r.description || '').substring(0, 80)}...</p>
-                        <div class="d-flex justify-content-between align-items-center border-top pt-2" style="border-color: var(--apple-border) !important;">
-                            <small class="text-blue fw-semibold">Unit ${r.unitId || ''}</small>
-                        </div>
-                    </div>`;
+                 html += `<div class="apple-card mb-2" data-id="${r.requestId || r.id || ''}" style="padding: 16px; cursor: default;">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong style="font-size: 0.9rem;">#${r.requestId || r.id}</strong>
+                        ${priorityBadge(r.priority)}
+                    </div>
+                    <p class="small mb-3 text-muted lh-sm">${(r.description)}</p>
+                    <div class="d-flex justify-content-between align-items-center border-top pt-2" style="border-color: var(--apple-border) !important;">
+                        <small class="text-blue fw-semibold">Unit ${r.unitNumber || ''}</small>
+                    </div>
+                </div>`;
                 });
                 html += `</div></div></div>`;
             });
@@ -179,7 +179,7 @@
             requests.forEach(r => {
                 html += `<tr data-id="${r.requestId || r.id}">
                     <td><strong>#${r.requestId || r.id}</strong></td>
-                    <td class="text-blue fw-semibold">${r.unitId || ''}</td>
+                    <td class="text-blue fw-semibold">${r.unitNumber || ''}</td>
                     <td class="text-muted">${(r.description || '').substring(0, 60)}${(r.description || '').length > 60 ? '...' : ''}</td>
                     <td>${priorityBadge(r.priority)}</td>
                     <td class="status-cell">${statusBadge(r.status)}</td>

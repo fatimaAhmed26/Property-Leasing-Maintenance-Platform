@@ -34,7 +34,7 @@
             @foreach (var l in Model)
             {
                 var isOverdue = overdueIds.Contains(l.LeaseId);
-                <tr class="@(isOverdue ? "table-danger" : "")">
+                <tr class="@(isOverdue)">
                     <td><strong>#@l.LeaseId</strong></td>
                     <td>@l.Tenant?.FullName</td>
                     <td class="text-blue fw-semibold">@l.Unit?.UnitNumber</td>
@@ -46,7 +46,7 @@
                         </span>
                     </td>
                     <td>
-                        <a asp-action="LeasePayments" asp-route-leaseId="@l.LeaseId" class="btn-apple-outline btn-sm py-1">View History</a>
+                        <a asp-action="LeasePayments" asp-route-leaseId="@l.LeaseId" class="btn-apple-outline text-decoration-none btn-sm py-1">View History</a>
                         <button class="btn-apple btn-sm py-1" data-bs-toggle="modal" data-bs-target="#payModal_@l.LeaseId">Record Payment</button>
 
                         <div class="modal fade" id="payModal_@l.LeaseId" tabindex="-1">

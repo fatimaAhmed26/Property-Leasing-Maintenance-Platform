@@ -1,10 +1,11 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropertyLeasing.API.Data;
 using PropertyLeasing.API.Models;
 using PropertyLeasing.API.Services;
+using System.Diagnostics;
+using System.Security.Claims;
 
 namespace PropertyLeasingSystem.Controllers
 {
@@ -32,6 +33,13 @@ namespace PropertyLeasingSystem.Controllers
                 .CountAsync(a => a.Status == ApplicationStatuses.Submitted ||
                                  a.Status == ApplicationStatuses.Pending ||
                                  a.Status == ApplicationStatuses.Screening);
+
+            if (User.Identity?.IsAuthenticated ?? false)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var user = await _context.Users.FindAsync(userId);
+                ViewBag.CurrentUserName = user?.FullName ?? User.Identity.Name;
+            }
             return View();
         }
 

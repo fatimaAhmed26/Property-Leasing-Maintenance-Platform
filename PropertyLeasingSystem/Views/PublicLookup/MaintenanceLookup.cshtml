@@ -3,30 +3,32 @@
     Layout = "_Layout";
 }
 
-<div class="container py-5" style="max-width:560px;">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="bi bi-search"></i> Track Your Maintenance Request</h4>
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold mb-1">Track Request</h2>
+            <p class="text-muted">Enter your ticket details below to check its status.</p>
         </div>
-        <div class="card-body">
-            <p class="text-muted mb-4">Enter your ticket number and registered phone number to view the current status of your request.</p>
 
+        <div class="apple-card">
             @if (TempData["Error"] != null)
             {
-                <div class="alert alert-danger">@TempData["Error"]</div>
+                <div class="alert alert-danger mb-4">@TempData["Error"]</div>
             }
 
             <form method="post">
                 @Html.AntiForgeryToken()
-                <div class="mb-3">
+                <div class="mb-4">
                     <label class="form-label fw-semibold">Ticket Number</label>
-                    <input type="text" name="ticketNumber" class="form-control" placeholder="e.g. 1" required />
+                    <input type="text" name="ticketNumber" class="form-control" placeholder="e.g. 19" required />
                 </div>
                 <div class="mb-4">
                     <label class="form-label fw-semibold">Registered Phone Number</label>
                     <input type="text" name="phoneNumber" class="form-control" placeholder="e.g. 33334444" required />
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Look Up Request</button>
+                <div class="mt-4 pt-2 border-top">
+                    <button type="submit" class="btn-apple w-100 mt-3 py-2" style="font-size: 1rem;">Look Up Request</button>
+                </div>
             </form>
         </div>
     </div>

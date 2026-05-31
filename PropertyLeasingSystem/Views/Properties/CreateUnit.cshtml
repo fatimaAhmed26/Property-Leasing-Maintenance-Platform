@@ -4,53 +4,64 @@
 }
 
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2 class="mb-1">Add Unit</h2>
-        <p class="text-muted mb-3">Property: <strong>@ViewBag.PropertyName</strong></p>
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <form asp-action="CreateUnit" method="post">
-                    <input type="hidden" asp-for="PropertyId" value="@ViewBag.PropertyId" />
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <div class="col-md-7">
+        <div class="mb-4">
+            <h2 class="mb-1">Add Unit</h2>
+            <p class="text-muted mb-0">Property: <strong>@ViewBag.PropertyName</strong></p>
+        </div>
 
-                    <div class="mb-3">
-                        <label asp-for="UnitNumber" class="form-label"></label>
-                        <input asp-for="UnitNumber" class="form-control" placeholder="e.g. 101" />
-                        <span asp-validation-for="UnitNumber" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="RentAmount" class="form-label"></label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input asp-for="RentAmount" class="form-control" type="number" step="0.01" />
-                        </div>
-                        <span asp-validation-for="RentAmount" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="Size" class="form-label"></label>
-                        <input asp-for="Size" class="form-control" placeholder="e.g. 850 sqft" />
-                        <span asp-validation-for="Size" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="Amenities" class="form-label"></label>
-                        <input asp-for="Amenities" class="form-control" placeholder="e.g. AC, Parking, Pool" />
-                        <span asp-validation-for="Amenities" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input asp-for="IsAvailable" class="form-check-input" />
-                        <label asp-for="IsAvailable" class="form-check-label">Available for Rent</label>
-                    </div>
+        <div class="apple-card">
+            <form asp-action="CreateUnit" method="post">
+                <input type="hidden" asp-for="PropertyId" value="@ViewBag.PropertyId" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Add Unit</button>
-                        <a asp-action="Units" asp-route-propertyId="@ViewBag.PropertyId" class="btn btn-outline-secondary">Cancel</a>
+                <div class="mb-4">
+                    <label asp-for="UnitNumber" class="form-label fw-semibold">Unit Number</label>
+                    <input asp-for="UnitNumber" class="form-control" placeholder="e.g. 101" />
+                    <span asp-validation-for="UnitNumber" class="text-red mt-1 d-block" style="font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="RentAmount" class="form-label fw-semibold">Rent Amount / Month</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                        <input asp-for="RentAmount" class="form-control border-start-0" type="number" step="0.01" />
                     </div>
-                </form>
-            </div>
+                    <span asp-validation-for="RentAmount" class="text-red mt-1 d-block" style="font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Size" class="form-label fw-semibold">Size (sqft/sqm)</label>
+                    <input asp-for="Size" class="form-control" placeholder="e.g. 850 sqft" />
+                    <span asp-validation-for="Size" class="text-red mt-1 d-block" style="font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Amenities" class="form-label fw-semibold">Amenities</label>
+                    <input asp-for="Amenities" class="form-control" placeholder="e.g. AC, Parking, Pool" />
+                    <span asp-validation-for="Amenities" class="text-red mt-1 d-block" style="font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input asp-for="IsAvailable" class="form-check-input" style="cursor: pointer;" />
+                        <label asp-for="IsAvailable" class="form-check-label fw-semibold" style="cursor: pointer;">
+                            Available for Rent
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 pt-2 border-top mt-4">
+                    <button type="submit" class="btn-apple px-4 mt-3">Add Unit</button>
+                    <a asp-action="Units" asp-route-propertyId="@ViewBag.PropertyId" class="btn-apple-secondary text-decoration-none px-4 mt-3">Cancel</a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
